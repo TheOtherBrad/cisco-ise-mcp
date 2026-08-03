@@ -1,0 +1,22 @@
+{
+  "ise_version": "3.4",
+  "generated_utc": "2026-06-26T20:51:29Z",
+  "sources": {
+    "ers": "iseapi_yaml/ers/ERS_APIs.yaml (via links.yaml)",
+    "openapi": "iseapi_yaml/openapi/*.yaml (via links.yaml)",
+    "monitoring": "iseapi_yaml/monitoring/monitoring-open-api.yaml (via links.yaml)",
+    "dataconnect": "https://developer.cisco.com/docs/dataconnect/database-views/"
+  },
+  "counts": {
+    "ers": 79,
+    "dc": 70,
+    "openapi": 65,
+    "monitoring": 16
+  },
+  "sha256": {
+    "ers_resources.json": "fd77c3c7bea630ea371587fee446d3f8b5ced888da38da6e71455b40f40a3d75",
+    "dataconnect_views.json": "bd5a66b7847aafb52cc547168404fdcb18b116581b99577a6aeca95457394174",
+    "openapi_endpoints.json": "fb161597114b7267b3a835aa479469cac74866baa012d66fe9bcce8b9961dbff",
+    "monitoring_endpoints.json": "2ee95d5e50da7185d8fcdc0b9f3a62ce837948d46baeb733e48de7fb3b9a2ac9"
+  }
+}

@@ -1,0 +1,82 @@
+info:
+  project_name: Cisco ISE API YAML Downloads
+  version: 1.0
+
+ers:
+  - name: ERS Open API Download
+    url: https://pubhub.devnetcloud.com/media/identity-services-engine-api-v1/docs/endpoints/ERS-Open-API/ERS_APIs.yaml
+
+openapi:
+  - name: Open API Downloads
+  - server:
+    baseurl: https://pubhub.devnetcloud.com/media/identity-services-engine-api-v1/docs/endpoints/Open-API/
+  - files:
+    - name: 5G
+      path: "5G.yaml"
+    - name: Alarms
+      path: "alarms.yaml"
+    - name: BackupRestore
+      path: "BackupRestore.yaml"
+    - name: Certificates
+      path: "certificates.yaml"
+    - name: CustomAttributes
+      path: "custom-attributes.yaml"
+    - name: Dataconnect
+      path: "data-connect.yaml"
+    - name: Deployment
+      path: "deployment.yaml"
+    - name: Duo IdentitySync
+      path: "duo-identity-sync.yaml"
+    - name: Endpoints
+      path: "endpoints.yaml"
+    - name: Endpoint Replication
+      path: "endpoint-replication.yaml"
+    - name: Exim
+      path: "exim.yaml"
+    - name: IPsec
+      path: "ipsec.yaml"
+    - name: License
+      path: "licensing.yaml"
+    - name: LSD Settings
+      path: "lsd-settings.yaml"
+    - name: MFA
+      path: "mfa.yaml"
+    - name: OIDC
+      path: "oidc.yaml"
+    - name: Patch
+      path: "patch-hot-patch.yaml"
+    - name: Policy
+      path: "policy.yaml"
+    - name: Profiler
+      path: "ise-profiler.yaml"
+    - name: Prometheus AlertManager
+      path: "prometheus-alertmanager.yaml"
+    - name: pxGrid Cloud
+      path: "pxgrid-cloud.yaml"
+    - name: pxGrid Direct
+      path: "pxgrid-direct.yaml"
+    - name: RBAC Catalog
+      path: "rbac.yaml"
+    - name: Repository
+      path: "Repository.yaml"
+    - name: SGT Reservation
+      path: "api-sgt-reservation.yaml"
+    - name: System Settings
+      path: "System-Settings.yaml"
+    - name: TrustSec
+      path: "TrustSec.yaml"
+    - name: Task Service
+      path: "task-service.yaml"
+    - name: Split and Full Upgrade
+      path: "upgrade.yaml"
+    - name: Webhook
+      path: "webhooks.yaml"
+
+monitoring:
+  - name: Monitoring Open API Download
+  - url: https://pubhub.devnetcloud.com/media/identity-services-engine-api-v1/docs/endpoints/Monitoring-Open-API/monitoring-open-api.yaml
+
+# Default settings applied to all downloads
+default_settings:
+  - timeout_seconds: 30
+  - retry_count: 3

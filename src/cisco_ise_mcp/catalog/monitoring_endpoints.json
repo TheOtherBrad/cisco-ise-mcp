@@ -1,0 +1,172 @@
+[
+  {
+    "tool": "active_session_count",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/ActiveCount",
+    "params": [],
+    "body": false,
+    "desc": "Get Active Session Count",
+    "category": "Sessions"
+  },
+  {
+    "tool": "active_session_list",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/ActiveList",
+    "params": [],
+    "body": false,
+    "desc": "Get Active Session List",
+    "category": "Sessions"
+  },
+  {
+    "tool": "posture_session_count",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/PostureCount",
+    "params": [],
+    "body": false,
+    "desc": "Get Active Session Count",
+    "category": "Sessions"
+  },
+  {
+    "tool": "profiler_session_count",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/ProfilerCount",
+    "params": [],
+    "body": false,
+    "desc": "Get Profiler Count",
+    "category": "Sessions"
+  },
+  {
+    "tool": "auth_session_list",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/AuthList/{startTime}/{endTime}",
+    "params": [
+      "startTime",
+      "endTime"
+    ],
+    "body": false,
+    "desc": "Get Authentication Session List",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_by_mac",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/MACAddress/{mac}",
+    "params": [
+      "mac"
+    ],
+    "body": false,
+    "desc": "Get Full Session Information for MAC Address",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_by_username",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/UserName/{username}",
+    "params": [
+      "username"
+    ],
+    "body": false,
+    "desc": "Get Full SD username Information",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_by_ip",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/IPAddress/{ipaddress}",
+    "params": [
+      "ipaddress"
+    ],
+    "body": false,
+    "desc": "Get Full SD IPAddress Information",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_by_endpoint_ip",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/EndPointIPAddress/{ip}",
+    "params": [
+      "ip"
+    ],
+    "body": false,
+    "desc": "Get full session details for an endpoint IP address",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_by_id",
+    "method": "GET",
+    "path": "/admin/API/mnt/Session/Active/SessionID/{sid}/{outputType}",
+    "params": [
+      "sid",
+      "outputType"
+    ],
+    "body": false,
+    "desc": "Get Active Session by Session ID",
+    "category": "Sessions"
+  },
+  {
+    "tool": "mnt_version",
+    "method": "GET",
+    "path": "/admin/API/mnt/Version",
+    "params": [],
+    "body": false,
+    "desc": "Get Product Version",
+    "category": "System"
+  },
+  {
+    "tool": "failure_reasons",
+    "method": "GET",
+    "path": "/admin/API/mnt/FailureReasons",
+    "params": [],
+    "body": false,
+    "desc": "Get Failure Reasons",
+    "category": "System"
+  },
+  {
+    "tool": "coa_reauth",
+    "method": "GET",
+    "path": "/admin/API/mnt/CoA/Reauth/{node}/{mac}/{type}",
+    "params": [
+      "node",
+      "mac",
+      "type"
+    ],
+    "body": false,
+    "desc": "Get CoA reauthentication status",
+    "category": "CoA"
+  },
+  {
+    "tool": "coa_disconnect",
+    "method": "GET",
+    "path": "/admin/API/mnt/CoA/Disconnect/{node}/{mac}/{option}",
+    "params": [
+      "node",
+      "mac",
+      "option"
+    ],
+    "body": false,
+    "desc": "Get CoA disconnect status",
+    "category": "CoA"
+  },
+  {
+    "tool": "session_delete_by_mac",
+    "method": "DELETE",
+    "path": "/admin/API/mnt/Session/Delete/MACAddress/{mac}",
+    "params": [
+      "mac"
+    ],
+    "body": false,
+    "desc": "Delete session record by MAC address",
+    "category": "Sessions"
+  },
+  {
+    "tool": "session_delete_by_id",
+    "method": "DELETE",
+    "path": "/admin/API/mnt/Session/Delete/SessionID/{sid}",
+    "params": [
+      "sid"
+    ],
+    "body": false,
+    "desc": "Delete session record by Session ID",
+    "category": "Sessions"
+  }
+]

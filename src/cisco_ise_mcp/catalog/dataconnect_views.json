@@ -1,0 +1,5934 @@
+{
+  "aaa_diagnostics_view": {
+    "view": "AAA_DIAGNOSTICS_VIEW",
+    "label": "Aaa Diagnostics",
+    "description": "Provides details of all network sessions between Cisco ISE and users. Use iseql.py \"SELECT view_name FROM user_views ORDER BY view_name ASC\" to get all the tables or views that you have access to.",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Shows the session ID"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Displays the username"
+      },
+      {
+        "name": "MESSAGE_SEVERITY",
+        "type": "VARCHAR2",
+        "description": "Displays the severity of message"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "CATEGORY",
+        "type": "VARCHAR2",
+        "description": "Displays the category"
+      },
+      {
+        "name": "INFO",
+        "type": "VARCHAR2",
+        "description": "Displays the diagnostic info"
+      }
+    ]
+  },
+  "adapter_status": {
+    "view": "ADAPTER_STATUS",
+    "label": "Adapter Status",
+    "description": "Adapter Status Report",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies the adapter status"
+      },
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Unique database ID"
+      },
+      {
+        "name": "ADAPTER_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the adapter name"
+      },
+      {
+        "name": "CONNECTIVITY",
+        "type": "VARCHAR2",
+        "description": "Specifies the connectivity"
+      }
+    ]
+  },
+  "adaptive_network_control": {
+    "view": "ADAPTIVE_NETWORK_CONTROL",
+    "label": "Adaptive Network Control",
+    "description": "The Adaptive Network Control Audit report is based on the RADIUS accounting. It displays historical reporting of all network sessions for each endpoint",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the endpoint ID"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Unique Database ID"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      },
+      {
+        "name": "IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IPV6 IP address"
+      },
+      {
+        "name": "OPERATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the operation type"
+      },
+      {
+        "name": "OPERATION_STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies the operation status"
+      },
+      {
+        "name": "AUDIT_SESSION",
+        "type": "VARCHAR2",
+        "description": "Specifies the audit session"
+      },
+      {
+        "name": "ADMIN_IDENTITY",
+        "type": "VARCHAR2",
+        "description": "Specifies the admin identity"
+      },
+      {
+        "name": "ADMIN_IP",
+        "type": "VARCHAR2",
+        "description": "Specifies the admin IP"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Specifies the ISE node"
+      }
+    ]
+  },
+  "administrator_logins": {
+    "view": "ADMINISTRATOR_LOGINS",
+    "label": "Administrator Logins",
+    "description": "Gives the data about the administrator logins to the ISE",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when administrator logged in"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when administrator logged in"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Hostname of ISE node"
+      },
+      {
+        "name": "ADMIN_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the admin"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of the client from where the admin logged in"
+      },
+      {
+        "name": "IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IPV6 address"
+      },
+      {
+        "name": "INTERFACE",
+        "type": "VARCHAR2",
+        "description": "Interface used for login GUI/CLI"
+      },
+      {
+        "name": "ADMIN_SESSION",
+        "type": "VARCHAR2",
+        "description": "admin session"
+      },
+      {
+        "name": "EVENT_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of the event"
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Admin logged in or logged out"
+      }
+    ]
+  },
+  "admin_users": {
+    "view": "ADMIN_USERS",
+    "label": "Admin Users",
+    "description": "This provides details of all the administrators of ISE",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Admin user is enabled or disabled"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the admin user"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description"
+      },
+      {
+        "name": "FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "First name of the admin user"
+      },
+      {
+        "name": "LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Last name of the admin user"
+      },
+      {
+        "name": "EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Email address of the admin user"
+      },
+      {
+        "name": "ADMIN_GROUP",
+        "type": "VARCHAR2",
+        "description": "Group to which admin user belongs"
+      }
+    ]
+  },
+  "aup_acceptance_status": {
+    "view": "AUP_ACCEPTANCE_STATUS",
+    "label": "Aup Acceptance Status",
+    "description": "Track all accepted and denied AUP connections",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User name"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of the endpoint"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "MAC address of the endpoint"
+      },
+      {
+        "name": "PORTAL_NAME",
+        "type": "VARCHAR2",
+        "description": "Portal name"
+      },
+      {
+        "name": "AUP_ACCEPTANCE",
+        "type": "VARCHAR2",
+        "description": "AUP acceptance status"
+      },
+      {
+        "name": "FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "First name of user"
+      },
+      {
+        "name": "LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Last name of user"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group"
+      },
+      {
+        "name": "EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Email address of user"
+      },
+      {
+        "name": "PHONE_NUMBER",
+        "type": "VARCHAR2",
+        "description": "Phone number of user"
+      },
+      {
+        "name": "COMPANY",
+        "type": "VARCHAR2",
+        "description": "Company of user"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identify store"
+      },
+      {
+        "name": "NAD_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAD"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAS"
+      },
+      {
+        "name": "USER_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of the user"
+      }
+    ]
+  },
+  "authorization_profiles": {
+    "view": "AUTHORIZATION_PROFILES",
+    "label": "Authorization Profiles",
+    "description": "Displays all existing authorization profiles",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the authorization profiles"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of the authorization profiles"
+      }
+    ]
+  },
+  "change_configuration_audit": {
+    "view": "CHANGE_CONFIGURATION_AUDIT",
+    "label": "Change Configuration Audit",
+    "description": "Displays the configuration audit data",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Hostname of ISE node"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Message code"
+      },
+      {
+        "name": "ADMIN_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the admin who made config change"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAD"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of NAD"
+      },
+      {
+        "name": "INTERFACE",
+        "type": "VARCHAR2",
+        "description": "Interface used for login GUI/CLI"
+      },
+      {
+        "name": "OBJECT_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of object for which config is changed"
+      },
+      {
+        "name": "OBJECT_TYPE",
+        "type": "VARCHAR2",
+        "description": "Type of object for which config is changed"
+      },
+      {
+        "name": "MESSAGE_CLASS",
+        "type": "VARCHAR2",
+        "description": "Message class"
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Config change done"
+      },
+      {
+        "name": "REQUESTED_OPERATION",
+        "type": "VARCHAR2",
+        "description": "Operation done"
+      },
+      {
+        "name": "OPERATION_MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Operation details"
+      },
+      {
+        "name": "HOST_ID",
+        "type": "VARCHAR2",
+        "description": "Hostname of ISE node on which change is done"
+      },
+      {
+        "name": "REQUEST_RESPONSE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Type of request response"
+      },
+      {
+        "name": "FAILURE_FLAG",
+        "type": "VARCHAR2",
+        "description": "Failure flag"
+      },
+      {
+        "name": "MODIFIED_PROPERTIES",
+        "type": "CLOB",
+        "description": "Modified properties"
+      },
+      {
+        "name": "DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of the event"
+      },
+      {
+        "name": "OBJECT_ID",
+        "type": "VARCHAR2",
+        "description": "Object ID"
+      },
+      {
+        "name": "APPLIED_TO_ACS_INSTANCE",
+        "type": "VARCHAR2",
+        "description": "ISE nodes to which change is applied"
+      },
+      {
+        "name": "LOCAL_MODE",
+        "type": "NUMBER",
+        "description": "Local mode"
+      }
+    ]
+  },
+  "coa_events": {
+    "view": "COA_EVENTS",
+    "label": "Coa Events",
+    "description": "Log of change of authorization issued based on threat events received from various adapters",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "COA_EVENT_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the COA event ID"
+      },
+      {
+        "name": "COA_STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies the COA status"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the calling station ID"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the user name"
+      },
+      {
+        "name": "NEW_AUTHZ_RULE",
+        "type": "VARCHAR2",
+        "description": "Specifies the Network Authorization Rule"
+      },
+      {
+        "name": "OLD_AUTHZ_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Specifies the old Authorization profile"
+      },
+      {
+        "name": "NEW_AUTHZ_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Specifies the new Authorization profile"
+      },
+      {
+        "name": "VENDOR_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the vendor name"
+      },
+      {
+        "name": "INCIDENT_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the incident type"
+      },
+      {
+        "name": "THREAT_EVENTS",
+        "type": "VARCHAR2",
+        "description": "Specifies the threat events"
+      },
+      {
+        "name": "OPERATION_MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the operation message text"
+      }
+    ]
+  },
+  "endpoints_data": {
+    "view": "ENDPOINTS_DATA",
+    "label": "Endpoints Data",
+    "description": "Collection of all data related to endpoint that ISE collects",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "ENDPOINT_POLICY_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the unique ID of the endpoint policy used"
+      },
+      {
+        "name": "MATCHED_POLICY_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the ID of profiling used"
+      },
+      {
+        "name": "NMAP_SUBNET_SCANID",
+        "type": "NUMBER",
+        "description": "NMAP subnet can ID of end points"
+      },
+      {
+        "name": "PORTAL_USER",
+        "type": "VARCHAR2",
+        "description": "Specifies the portal user"
+      },
+      {
+        "name": "AUTH_STORE_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the auth store ID"
+      },
+      {
+        "name": "DEVICE_REGISTRATIONS_STATUS",
+        "type": "NUMBER",
+        "description": "Specifies if device is registered"
+      },
+      {
+        "name": "REG_TIMESTAMP",
+        "type": "NUMBER",
+        "description": "Specifies the registered timestamp"
+      },
+      {
+        "name": "POSTURE_APPLICABLE",
+        "type": "NUMBER",
+        "description": "Specifies if Posture is Applicable"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when record added"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when record last updated"
+      },
+      {
+        "name": "PROFILE_SERVER",
+        "type": "VARCHAR2",
+        "description": "Specifies the ISE node that profiled the endpoint"
+      },
+      {
+        "name": "BYOD_REG",
+        "type": "VARCHAR2",
+        "description": "Specifies the BYOD Registration status"
+      },
+      {
+        "name": "HOSTNAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the hostname of the endpoint"
+      },
+      {
+        "name": "VERSION",
+        "type": "NUMBER",
+        "description": "Specifies the version"
+      },
+      {
+        "name": "POSTURE_EXPIRY",
+        "type": "VARCHAR2",
+        "description": "Specifies the posture expiry"
+      },
+      {
+        "name": "NATIVE_UDID",
+        "type": "VARCHAR2",
+        "description": "Endpoint native UDID"
+      },
+      {
+        "name": "PHONE_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint phone ID"
+      },
+      {
+        "name": "PHONE_ID_TYPE",
+        "type": "VARCHAR2",
+        "description": "Endpoint phone ID type"
+      },
+      {
+        "name": "MDM_SERVER_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint MDM server ID"
+      },
+      {
+        "name": "UNIQUE_SUBJECT_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint subject ID"
+      },
+      {
+        "name": "MDM_GUID",
+        "type": "VARCHAR2",
+        "description": "Endpoint MDM GUID"
+      },
+      {
+        "name": "ENDPOINT_UNIQUE_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint unique ID"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the EPID of the endpoint"
+      },
+      {
+        "name": "PROBE_DATA",
+        "type": "VARCHAR2",
+        "description": "Specifies all the probe data acquired during profiling. When using Splunk, the PROBE_DATA column may display binary-encoded data streams (compressed and non-printable characters)."
+      },
+      {
+        "name": "CUSTOM_ATTRIBUTES",
+        "type": "VARCHAR2",
+        "description": "Specifies the custom attributes"
+      },
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies MAC address of the endpoint"
+      },
+      {
+        "name": "ENDPOINT_POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the profiling policy under which endpoint got profiled"
+      },
+      {
+        "name": "STATIC_ASSIGNMENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the endpoint static assignment status"
+      },
+      {
+        "name": "STATIC_GROUP_ASSIGNMENT",
+        "type": "VARCHAR2",
+        "description": "Specifies if endpoint statically assigned to user identity group"
+      },
+      {
+        "name": "IDENTITY_GROUP_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the unique ID of the User identity Group the endpoint belongs to"
+      },
+      {
+        "name": "ENDPOINT_IP",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address of the endpoint"
+      },
+      {
+        "name": "ENDPOINT_POLICY_VERSION",
+        "type": "NUMBER",
+        "description": "The version of endpoint policy used"
+      },
+      {
+        "name": "MATCHED_VALUE",
+        "type": "VARCHAR2",
+        "description": "Matched Certainty Factor"
+      }
+    ]
+  },
+  "endpoint_identity_groups": {
+    "view": "ENDPOINT_IDENTITY_GROUPS",
+    "label": "Endpoint Identity Groups",
+    "description": "This will provide details of all the endpoint identity groups",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description"
+      },
+      {
+        "name": "CREATED_BY",
+        "type": "VARCHAR2",
+        "description": "Name of the user"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of creation"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of updating"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Active/Inactive"
+      }
+    ]
+  },
+  "endpoint_purge_view": {
+    "view": "ENDPOINT_PURGE_VIEW",
+    "label": "Endpoint Purge",
+    "description": "Enables the user to review the history of endpoints purge activities",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ENDPOINT_PURGE_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint purge ID"
+      },
+      {
+        "name": "RUN_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Run time"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "PROFILER_SERVER",
+        "type": "VARCHAR2",
+        "description": "Profiler server"
+      },
+      {
+        "name": "ENDPOINT_PURGE_RULE",
+        "type": "VARCHAR2",
+        "description": "Endpoint purge rule"
+      },
+      {
+        "name": "ENDPOINT_COUNT",
+        "type": "NUMBER",
+        "description": "Number of endpoints"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      }
+    ]
+  },
+  "ext_id_src_active_directory": {
+    "view": "EXT_ID_SRC_ACTIVE_DIRECTORY",
+    "label": "Ext ID Src Active Directory",
+    "description": "List of Active Directory Identity Stores",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of active directory"
+      }
+    ]
+  },
+  "ext_id_src_cert_auth_profile": {
+    "view": "EXT_ID_SRC_CERT_AUTH_PROFILE",
+    "label": "Ext ID Src Cert Auth Profile",
+    "description": "List of Certificate Authentication Profiles",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of Certificate Authentication Profile"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of Certificate Authentication Profile"
+      }
+    ]
+  },
+  "ext_id_src_ldap": {
+    "view": "EXT_ID_SRC_LDAP",
+    "label": "Ext ID Src LDAP",
+    "description": "List of LDAP Identity Sources",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of LDAP Identity Store"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of LDAP Identity Store"
+      }
+    ]
+  },
+  "ext_id_src_odbc": {
+    "view": "EXT_ID_SRC_ODBC",
+    "label": "Ext ID Src ODBC",
+    "description": "List of ODBC Identity Sources",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of ODBC Identity Store"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of ODBC Identity Store"
+      }
+    ]
+  },
+  "ext_id_src_radius_token": {
+    "view": "EXT_ID_SRC_RADIUS_TOKEN",
+    "label": "Ext ID Src RADIUS Token",
+    "description": "List of RADIUS Token Identity Sources",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of RADIUS Token Identity Sources"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of RADIUS Token Identity Sources"
+      }
+    ]
+  },
+  "ext_id_src_rest": {
+    "view": "EXT_ID_SRC_REST",
+    "label": "Ext ID Src REST",
+    "description": "List of REST ID Stores",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of REST ID store"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of REST ID store"
+      }
+    ]
+  },
+  "ext_id_src_rsa_securid": {
+    "view": "EXT_ID_SRC_RSA_SECURID",
+    "label": "Ext ID Src Rsa Securid",
+    "description": "List of RSA SecurID Identity Sources",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of RSA SecurID Identity Sources"
+      }
+    ]
+  },
+  "ext_id_src_saml_id_providers": {
+    "view": "EXT_ID_SRC_SAML_ID_PROVIDERS",
+    "label": "Ext ID Src Saml ID Providers",
+    "description": "List of SAML Identity Providers",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of SAML Identity Providers"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of SAML Identity Providers"
+      }
+    ]
+  },
+  "ext_id_src_social_login": {
+    "view": "EXT_ID_SRC_SOCIAL_LOGIN",
+    "label": "Ext ID Src Social Login",
+    "description": "List of Social Login Identity Stores",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of Social Login Identity Store"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of Social Login Identity Store"
+      }
+    ]
+  },
+  "failure_code_cause": {
+    "view": "FAILURE_CODE_CAUSE",
+    "label": "Failure Code Cause",
+    "description": "Provides details of various failure causes and respective codes",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "FAILURE_CODE",
+        "type": "VARCHAR2",
+        "description": "Specifies the failure code"
+      },
+      {
+        "name": "FAILURE_CAUSE",
+        "type": "VARCHAR2",
+        "description": "Specifies the failure cause"
+      }
+    ]
+  },
+  "guest_accounting": {
+    "view": "GUEST_ACCOUNTING",
+    "label": "Guest Accounting",
+    "description": "Details of all users assigned to guest identity groups appear in this report",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "IDENTITY",
+        "type": "VARCHAR2",
+        "description": "Specifies the identity of the user"
+      },
+      {
+        "name": "TIME_SPENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the time spent"
+      },
+      {
+        "name": "LOGGED_IN",
+        "type": "VARCHAR2",
+        "description": "Specifies the logged in time"
+      },
+      {
+        "name": "LOGGED_OUT",
+        "type": "VARCHAR2",
+        "description": "Specifies the logged out time"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the endpoint ID"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      }
+    ]
+  },
+  "guest_devicelogin_audit": {
+    "view": "GUEST_DEVICELOGIN_AUDIT",
+    "label": "Guest Devicelogin Audit",
+    "description": "Tracks login activity by employees at the my device portal and device related operation performed by the users in the my device portal",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "USER_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of the user"
+      },
+      {
+        "name": "PORTAL_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of guest portal used"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of device used"
+      },
+      {
+        "name": "DEVICE_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of the device"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "MAC address of Device"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of Device"
+      },
+      {
+        "name": "OPERATION",
+        "type": "VARCHAR2",
+        "description": "Operation that the user performed"
+      },
+      {
+        "name": "RESULT",
+        "type": "VARCHAR2",
+        "description": "Status of the user operation"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the failure reason"
+      },
+      {
+        "name": "AUTH_IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication identity store"
+      },
+      {
+        "name": "SERVER",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User name of user"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Syslog message code"
+      },
+      {
+        "name": "FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "First Name of user"
+      },
+      {
+        "name": "LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Last Name of user"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group to which users belongs to"
+      },
+      {
+        "name": "EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Email address of the user"
+      },
+      {
+        "name": "PHONE_NUMBER",
+        "type": "VARCHAR2",
+        "description": "Phone Number of user"
+      },
+      {
+        "name": "COMPANY",
+        "type": "VARCHAR2",
+        "description": "Company of the user"
+      },
+      {
+        "name": "STATIC_ASSIGNMENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the endpoint static assignment status"
+      },
+      {
+        "name": "ENDPOINT_PROFILER_SERVER",
+        "type": "VARCHAR2",
+        "description": "ISE node which profiled the endpoint"
+      },
+      {
+        "name": "NAD_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAD"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAS"
+      },
+      {
+        "name": "IDENTITY_STORE_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the name of the identity store"
+      },
+      {
+        "name": "IDENTITY_STORE_GUID",
+        "type": "VARCHAR2",
+        "description": "ID of Identity store in which user belongs"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of user"
+      }
+    ]
+  },
+  "key_performance_metrics": {
+    "view": "KEY_PERFORMANCE_METRICS",
+    "label": "Key Performance Metrics",
+    "description": "It will provides details of key performance metrics like average TPS, average load etc.,",
+    "internal": false,
+    "time_col": "LOGGED_TIME",
+    "columns": [
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Time data is collected"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "ISE Node in deployment"
+      },
+      {
+        "name": "RADIUS_REQUESTS_HR",
+        "type": "NUMBER",
+        "description": "Number of radius requests per hour for selected PSN server"
+      },
+      {
+        "name": "LOGGED_TO_MNT_HR",
+        "type": "NUMBER",
+        "description": "Number of requests logged to MNT database for selected PSN server"
+      },
+      {
+        "name": "NOISE_HR",
+        "type": "NUMBER",
+        "description": "Calculated as difference between radius requests and logged to MnT per hour"
+      },
+      {
+        "name": "SUPPRESSION_HR",
+        "type": "NUMBER",
+        "description": "Calculated as percentage of Noise w.r.t. radius requests per hour for selected PSN server"
+      },
+      {
+        "name": "AVG_LOAD",
+        "type": "NUMBER",
+        "description": "Average server load for selected server"
+      },
+      {
+        "name": "MAX_LOAD",
+        "type": "NUMBER",
+        "description": "Maximum server load for selected server"
+      },
+      {
+        "name": "AVG_LATENCY_PER_REQ",
+        "type": "NUMBER",
+        "description": "Average latency per radius request for selected PSN server"
+      },
+      {
+        "name": "AVG_TPS",
+        "type": "NUMBER",
+        "description": "Average transactions per second"
+      }
+    ]
+  },
+  "logical_profiles": {
+    "view": "LOGICAL_PROFILES",
+    "label": "Logical Profiles",
+    "description": "Displays all the logical profiles that exist along with their assigned policies",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "LOGICAL_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Name of logical Profile"
+      },
+      {
+        "name": "SYSTEM_TYPE",
+        "type": "VARCHAR2",
+        "description": "Type of logical profile like admin created or Cisco provided"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description"
+      },
+      {
+        "name": "ASSIGNED_POLICIES",
+        "type": "VARCHAR2",
+        "description": "Profiling policy assigned to logical profile."
+      }
+    ]
+  },
+  "misconfigured_nas_view": {
+    "view": "MISCONFIGURED_NAS_VIEW",
+    "label": "Misconfigured Nas",
+    "description": "Provides information about NADs with inaccurate accounting frequency typically when sending accounting information frequently",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAS"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "DETAIL_INFO",
+        "type": "VARCHAR2",
+        "description": "Displays the detailed info"
+      },
+      {
+        "name": "FAILED_ATTEMPTS",
+        "type": "VARCHAR2",
+        "description": "Failed attempts"
+      },
+      {
+        "name": "FAILED_TIMES",
+        "type": "VARCHAR2",
+        "description": "Failed times"
+      },
+      {
+        "name": "OTHER_ATTRIBUTES",
+        "type": "CLOB",
+        "description": "Other attributes"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "FAILED_TIMES_HOURS",
+        "type": "VARCHAR2",
+        "description": "Failed times in hours"
+      }
+    ]
+  },
+  "misconfigured_supplicants_view": {
+    "view": "MISCONFIGURED_SUPPLICANTS_VIEW",
+    "label": "Misconfigured Supplicants",
+    "description": "Provides a list of mis-configured supplicants along with the statistics due to failed attempts that are performed by a specific supplicant",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAS"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "NAS port ID"
+      },
+      {
+        "name": "NAS_PORT_TYPE",
+        "type": "VARCHAR2",
+        "description": "NAS port type"
+      },
+      {
+        "name": "SELECTED_AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "Authorization profile used after authentication"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Failure reason"
+      },
+      {
+        "name": "RESPONSE",
+        "type": "VARCHAR2",
+        "description": "Displays the response"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Execution steps"
+      },
+      {
+        "name": "OTHER_ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Other attributes"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "PASSED",
+        "type": "NUMBER",
+        "description": "Passed flag"
+      },
+      {
+        "name": "FAILED",
+        "type": "NUMBER",
+        "description": "Failed flag"
+      },
+      {
+        "name": "CREDENTIAL_CHECK",
+        "type": "VARCHAR2",
+        "description": "Credential check"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Endpoint matched profile"
+      },
+      {
+        "name": "MDM_SERVER_NAME",
+        "type": "VARCHAR2",
+        "description": "MDM server name"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IPV6 address"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Unique numeric string identifying the server session"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Authentication method"
+      },
+      {
+        "name": "AUTHENTICATION_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Authentication protocol"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "NETWORK_DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Device type"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Location"
+      }
+    ]
+  },
+  "network_access_users": {
+    "view": "NETWORK_ACCESS_USERS",
+    "label": "Network Access Users",
+    "description": "List of all the internal users in ISE",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database ID of Internal User"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Enabled or Disabled"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Name of User"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of User"
+      },
+      {
+        "name": "FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "First Name of User"
+      },
+      {
+        "name": "LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Last Name of User"
+      },
+      {
+        "name": "EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Email Address of User"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "List of Identity Group ID to which user belongs"
+      },
+      {
+        "name": "IS_ADMIN",
+        "type": "VARCHAR2",
+        "description": "Shows if user is admin"
+      },
+      {
+        "name": "ALLOW_PASSWORD_CHANGE_AFTER_LOGIN",
+        "type": "NUMBER",
+        "description": "Specifies if password change is allowed after login"
+      },
+      {
+        "name": "CURRENT_SUCCESSFUL_LOGIN_TIME",
+        "type": "VARCHAR2",
+        "description": "Specifies the current successful login time"
+      },
+      {
+        "name": "LAST_SUCCESSFUL_LOGIN_TIME",
+        "type": "VARCHAR2",
+        "description": "Specifies the last successful login time"
+      },
+      {
+        "name": "LAST_UNSUCCESSFUL_LOGIN_TIME",
+        "type": "VARCHAR2",
+        "description": "Specifies the last unsuccessful login time"
+      },
+      {
+        "name": "SUCCESS_LOGIN_IPADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the success login IP address"
+      },
+      {
+        "name": "FAILED_LOGIN_IPADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the failed login IP address"
+      },
+      {
+        "name": "EXPIRY_DATE_ENABLED",
+        "type": "NUMBER",
+        "description": "Specifies the expiry date enabled"
+      },
+      {
+        "name": "EXPIRY_DATE",
+        "type": "NUMBER",
+        "description": "Specifies the expiry date"
+      },
+      {
+        "name": "ACCOUNT_NAME_ALIAS",
+        "type": "VARCHAR2",
+        "description": "Specifies the account name alias"
+      },
+      {
+        "name": "PASSWORD_LAST_UPDATED_ON",
+        "type": "NUMBER",
+        "description": "Specifies when the password was last updated"
+      },
+      {
+        "name": "PASSWORD_NEVER_EXPIRES",
+        "type": "NUMBER",
+        "description": "Specifies if the password expired or not"
+      },
+      {
+        "name": "ALARM_EMAILABLE",
+        "type": "NUMBER",
+        "description": "Specifies if the user receives system alarms"
+      }
+    ]
+  },
+  "network_devices": {
+    "view": "NETWORK_DEVICES",
+    "label": "Network Devices",
+    "description": "Gives the network device information which is configured in ISE",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name"
+      },
+      {
+        "name": "IP_MASK",
+        "type": "VARCHAR2",
+        "description": "IP address/mask"
+      },
+      {
+        "name": "PROFILE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the profile"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Device location"
+      },
+      {
+        "name": "TYPE",
+        "type": "VARCHAR2",
+        "description": "Device type"
+      }
+    ]
+  },
+  "network_device_groups": {
+    "view": "NETWORK_DEVICE_GROUPS",
+    "label": "Network Device Groups",
+    "description": "This provides details of all the network device groups",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description"
+      },
+      {
+        "name": "CREATED_BY",
+        "type": "VARCHAR2",
+        "description": "Name of the user"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of creation"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of updating"
+      },
+      {
+        "name": "ACTIVE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Active/Inactive"
+      }
+    ]
+  },
+  "node_list": {
+    "view": "NODE_LIST",
+    "label": "Node List",
+    "description": "Provide information of all the nodes of deployment",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "HOSTNAME",
+        "type": "VARCHAR2",
+        "description": "Hostname"
+      },
+      {
+        "name": "NODE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Personas enabled on the node"
+      },
+      {
+        "name": "GATEWAY",
+        "type": "VARCHAR2",
+        "description": "Default gateway configured"
+      },
+      {
+        "name": "NODE_ROLE",
+        "type": "VARCHAR2",
+        "description": "Standalone or multi-node"
+      },
+      {
+        "name": "ACTIVE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Active/Inactive"
+      },
+      {
+        "name": "REPLICATION_STATUS",
+        "type": "VARCHAR2",
+        "description": "Status of replication"
+      },
+      {
+        "name": "PDP_SERVICES",
+        "type": "VARCHAR2",
+        "description": "Services enabled on the node"
+      },
+      {
+        "name": "HOST_ALIAS",
+        "type": "VARCHAR2",
+        "description": "FQDN"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of creation of record"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time of updating"
+      },
+      {
+        "name": "XGRID_ENABLED",
+        "type": "NUMBER",
+        "description": "PxGrid enabled status"
+      },
+      {
+        "name": "XGRID_PEER",
+        "type": "VARCHAR2",
+        "description": "PxGrid peer"
+      },
+      {
+        "name": "UDI_PID",
+        "type": "VARCHAR2",
+        "description": "Product Identifier"
+      },
+      {
+        "name": "UDI_VID",
+        "type": "VARCHAR2",
+        "description": "Version Identifier"
+      },
+      {
+        "name": "UDI_SN",
+        "type": "VARCHAR2",
+        "description": "Serial Number"
+      },
+      {
+        "name": "UDI_PT",
+        "type": "VARCHAR2",
+        "description": "Node type virtual or physical"
+      },
+      {
+        "name": "PATCH_VERSION",
+        "type": "VARCHAR2",
+        "description": "Patch version"
+      },
+      {
+        "name": "PIC_NODE",
+        "type": "NUMBER",
+        "description": "PIC node"
+      },
+      {
+        "name": "INSTALLATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Installation type"
+      },
+      {
+        "name": "VM_INFO",
+        "type": "VARCHAR2",
+        "description": "Virtual machine details"
+      },
+      {
+        "name": "API_NODE",
+        "type": "NUMBER",
+        "description": "API node"
+      }
+    ]
+  },
+  "openapi_operations": {
+    "view": "OPENAPI_OPERATIONS",
+    "label": "Openapi Operations",
+    "description": "Provides details about any configuration changes or data access performed using the OpenAPI framework",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record logged"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "REQUEST_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Displays the request time"
+      },
+      {
+        "name": "REQUEST_NAME",
+        "type": "VARCHAR2",
+        "description": "Displays the request name"
+      },
+      {
+        "name": "HTTP_METHOD",
+        "type": "VARCHAR2",
+        "description": "Displays the http method"
+      },
+      {
+        "name": "REQUEST_ID",
+        "type": "VARCHAR2",
+        "description": "Displays the request ID"
+      },
+      {
+        "name": "REQUEST_BODY",
+        "type": "VARCHAR2",
+        "description": "Displays the request body"
+      },
+      {
+        "name": "RESPONSE",
+        "type": "VARCHAR2",
+        "description": "Displays the response"
+      },
+      {
+        "name": "HTTP_CODE",
+        "type": "NUMBER",
+        "description": "Displays the http code"
+      },
+      {
+        "name": "HTTP_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the http status"
+      },
+      {
+        "name": "ERROR_MESSAGE",
+        "type": "VARCHAR2",
+        "description": "Displays the error if any"
+      },
+      {
+        "name": "SERVER",
+        "type": "VARCHAR2",
+        "description": "Displays the ISE hostname"
+      },
+      {
+        "name": "RESPONSE_DURATION",
+        "type": "NUMBER",
+        "description": "Displays the response duration"
+      },
+      {
+        "name": "CLIENT_IP",
+        "type": "VARCHAR2",
+        "description": "Displays the client IP address"
+      },
+      {
+        "name": "ADMINISTRATOR",
+        "type": "VARCHAR2",
+        "description": "Displays the admin name"
+      }
+    ]
+  },
+  "policy_sets": {
+    "view": "POLICY_SETS",
+    "label": "Policy Sets",
+    "description": "Provides a list of all policy sets currently configured in the system",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when record was created"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when record was last updated"
+      },
+      {
+        "name": "POLICYSET_STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies if the policy set status is active"
+      },
+      {
+        "name": "POLICYSET_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the policy set name"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Specifies the policy sets description"
+      }
+    ]
+  },
+  "posture_assessment_by_condition": {
+    "view": "POSTURE_ASSESSMENT_BY_CONDITION",
+    "label": "Posture Assessment By Condition",
+    "description": "The report provides details about policy condition and their status",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "CONDITION_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the status of the condition i.e. passed, failed or skipped"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Displays the network device group location"
+      },
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Specifies the time at which policy was enforced"
+      },
+      {
+        "name": "POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the posture policy"
+      },
+      {
+        "name": "POLICY_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the policy condition status"
+      },
+      {
+        "name": "ENFORCEMENT_NAME",
+        "type": "VARCHAR2",
+        "description": "Displays the posture requirement name"
+      },
+      {
+        "name": "ENFORCEMENT_TYPE",
+        "type": "VARCHAR2",
+        "description": "Enforcement type of the requirement i.e. mandatory, optional or audit"
+      },
+      {
+        "name": "ENFORCEMENT_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the status of the posture requirement enforcement"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Displays the message code of the posture syslog"
+      },
+      {
+        "name": "REQUEST_TIME",
+        "type": "VARCHAR2",
+        "description": "Displays the request time"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "VARCHAR2",
+        "description": "Displays the response time"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint MAC address"
+      },
+      {
+        "name": "ENDPOINT_OS",
+        "type": "VARCHAR2",
+        "description": "Endpoint operating system"
+      },
+      {
+        "name": "POSTURE_AGENT_VERSION",
+        "type": "VARCHAR2",
+        "description": "Displays the version of the posture agent"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status i.e. pending, compliant, non-compliant etc"
+      },
+      {
+        "name": "POSTURE_POLICY_MATCHED",
+        "type": "VARCHAR2",
+        "description": "Displays the posture policy matched"
+      },
+      {
+        "name": "POSTURE_REPORT",
+        "type": "CLOB",
+        "description": "Displays the posture report"
+      },
+      {
+        "name": "ANTI_VIRUS_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the installed anti-virus"
+      },
+      {
+        "name": "ANTI_SPYWARE_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the installed anti-spyware"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "PRA_ENFORCEMENT",
+        "type": "NUMBER",
+        "description": "Displays the status of periodic reassessment enforcement"
+      },
+      {
+        "name": "PRA_INTERVAL",
+        "type": "NUMBER",
+        "description": "Periodic reassessment interval configured"
+      },
+      {
+        "name": "PRA_ACTION",
+        "type": "VARCHAR2",
+        "description": "Periodic reassessment action configured"
+      },
+      {
+        "name": "PRA_GRACE_TIME",
+        "type": "VARCHAR2",
+        "description": "Periodic reassessment grace time configured"
+      },
+      {
+        "name": "IDENTITY",
+        "type": "VARCHAR2",
+        "description": "Displays the user name"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Shows the session ID"
+      },
+      {
+        "name": "FEED_URL",
+        "type": "VARCHAR2",
+        "description": "Shows the update feed URL"
+      },
+      {
+        "name": "NUM_OF_UPDATES",
+        "type": "NUMBER",
+        "description": "Displays the number of updates"
+      },
+      {
+        "name": "USER_AGREEMENT_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the status of the user agreement"
+      },
+      {
+        "name": "SYSTEM_NAME",
+        "type": "VARCHAR2",
+        "description": "Hostname of the endpoint"
+      },
+      {
+        "name": "SYSTEM_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "Displays the domain name of the endpoint"
+      },
+      {
+        "name": "SYSTEM_USER",
+        "type": "VARCHAR2",
+        "description": "Displays the system user"
+      },
+      {
+        "name": "SYSTEM_USER_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "Displays the system user domain"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of the endpoint"
+      },
+      {
+        "name": "AM_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the anti-malware installed on the endpoint"
+      },
+      {
+        "name": "CONDITION_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the posture condition which was matched"
+      }
+    ]
+  },
+  "posture_assessment_by_endpoint": {
+    "view": "POSTURE_ASSESSMENT_BY_ENDPOINT",
+    "label": "Posture Assessment By Endpoint",
+    "description": "This view shows which endpoints have been subject to posture assessment and also gives the administrator the ability to view the details of each endpoint's posture assessment",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "SYSTEM_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "Displays the domain name of the endpoint"
+      },
+      {
+        "name": "SYSTEM_USER",
+        "type": "VARCHAR2",
+        "description": "Displays the system user"
+      },
+      {
+        "name": "SYSTEM_USER_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "Displays the system user domain"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of the endpoint"
+      },
+      {
+        "name": "PRA_GRACE_TIME",
+        "type": "VARCHAR2",
+        "description": "Periodic reassessment grace time configured"
+      },
+      {
+        "name": "NAD_LOCATION",
+        "type": "VARCHAR2",
+        "description": "Location of NAD"
+      },
+      {
+        "name": "AM_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the anti-malware installed on the endpoint"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Hostname of ISE node"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Displays the message code of the posture syslog"
+      },
+      {
+        "name": "REQUEST_TIME",
+        "type": "VARCHAR2",
+        "description": "Displays the request time"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "VARCHAR2",
+        "description": "Displays the response time"
+      },
+      {
+        "name": "ENDPOINT_MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "MAC address of the endpoint"
+      },
+      {
+        "name": "ENDPOINT_OPERATING_SYSTEM",
+        "type": "VARCHAR2",
+        "description": "Operating system of the endpoint"
+      },
+      {
+        "name": "POSTURE_AGENT_VERSION",
+        "type": "VARCHAR2",
+        "description": "Displays the version of the posture agent"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status i.e. pending, compliant, non-compliant etc"
+      },
+      {
+        "name": "POSTURE_POLICY_MATCHED",
+        "type": "VARCHAR2",
+        "description": "Displays the posture policy matched"
+      },
+      {
+        "name": "POSTURE_REPORT",
+        "type": "CLOB",
+        "description": "Displays the posture report"
+      },
+      {
+        "name": "ANTI_VIRUS_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the installed anti-virus"
+      },
+      {
+        "name": "ANTI_SPYWARE_INSTALLED",
+        "type": "VARCHAR2",
+        "description": "Displays the installed anti-spyware"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "PRA_ENFORCEMENT_FLAG",
+        "type": "NUMBER",
+        "description": "Displays the status of periodic reassessment enforcement"
+      },
+      {
+        "name": "PRA_INTERVAL",
+        "type": "NUMBER",
+        "description": "Periodic reassessment interval configured"
+      },
+      {
+        "name": "PRA_ACTION",
+        "type": "VARCHAR2",
+        "description": "Periodic reassessment action configured"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Displays the username"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Shows the session ID"
+      },
+      {
+        "name": "FEED_URL",
+        "type": "VARCHAR2",
+        "description": "Shows the update feed URL"
+      },
+      {
+        "name": "NUM_OF_UPDATES",
+        "type": "NUMBER",
+        "description": "Number of updates"
+      },
+      {
+        "name": "USER_AGREEMENT_STATUS",
+        "type": "VARCHAR2",
+        "description": "Displays the status of the user agreement"
+      },
+      {
+        "name": "SYSTEM_NAME",
+        "type": "VARCHAR2",
+        "description": "Hostname of the endpoint"
+      }
+    ]
+  },
+  "posture_grace_period": {
+    "view": "POSTURE_GRACE_PERIOD",
+    "label": "Posture Grace Period",
+    "description": "Lists the MAC address and the  posture grace period expiration",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "MAC_LIST",
+        "type": "VARCHAR2",
+        "description": "Specifies the list of MAC address"
+      },
+      {
+        "name": "LAST_GRACE_EXPIRY",
+        "type": "VARCHAR2",
+        "description": "Specifies the posture grace period expiration time"
+      }
+    ]
+  },
+  "posture_script_condition": {
+    "view": "POSTURE_SCRIPT_CONDITION",
+    "label": "Posture Script Condition",
+    "description": "Provides execution status for each requirement that uses script condition.",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "The name of the ISE Node"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "The execution status of the condition"
+      },
+      {
+        "name": "POLICY_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the policy being applied"
+      },
+      {
+        "name": "REQUIREMENT_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the requirement"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "The Session ID"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "The Endpoint ID"
+      },
+      {
+        "name": "UDID",
+        "type": "VARCHAR2",
+        "description": "The UDID"
+      },
+      {
+        "name": "CONDITION_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the condition"
+      }
+    ]
+  },
+  "posture_script_remediation": {
+    "view": "POSTURE_SCRIPT_REMEDIATION",
+    "label": "Posture Script Remediation",
+    "description": "Provides execution status for each requirement that uses script  remediation.",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "The name of the ISE Node"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "The execution status of the remediation"
+      },
+      {
+        "name": "POLICY_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the policy being applied"
+      },
+      {
+        "name": "REQUIREMENT_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the requirement"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "The Session ID"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "The Endpoint ID"
+      },
+      {
+        "name": "UDID",
+        "type": "VARCHAR2",
+        "description": "The UDID"
+      }
+    ]
+  },
+  "primary_guest": {
+    "view": "PRIMARY_GUEST",
+    "label": "Primary Guest",
+    "description": "The Primary Guest report combines data from various guest reports into a single view. This report collects all guest activity and provides details about the website guest users visit",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "DETAILS",
+        "type": "VARCHAR2",
+        "description": "Specifies the details"
+      },
+      {
+        "name": "PORTAL_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the portal name"
+      },
+      {
+        "name": "RESULT",
+        "type": "VARCHAR2",
+        "description": "Specifies the result"
+      },
+      {
+        "name": "SPONSOR_FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor first name"
+      },
+      {
+        "name": "SPONSOR_LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor last name"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Specifies the identity group to which user belongs"
+      },
+      {
+        "name": "SPONSOR_EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor email address"
+      },
+      {
+        "name": "SPONSOR_PHONE_NUMBER",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor phone number"
+      },
+      {
+        "name": "SPONSOR_COMPANY",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor company"
+      },
+      {
+        "name": "GUEST_LAST_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest last name"
+      },
+      {
+        "name": "GUEST_FIRST_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest first name"
+      },
+      {
+        "name": "GUEST_EMAIL_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest email address"
+      },
+      {
+        "name": "GUEST_PHONE_NUMBER",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest phone number"
+      },
+      {
+        "name": "GUEST_COMPANY",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest company"
+      },
+      {
+        "name": "GUEST_STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest status"
+      },
+      {
+        "name": "GUEST_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest type"
+      },
+      {
+        "name": "VALID_DAYS",
+        "type": "VARCHAR2",
+        "description": "Specifies the number of days guest user is valid"
+      },
+      {
+        "name": "FROM_DATE",
+        "type": "VARCHAR2",
+        "description": "Specifies the start date of the guest user"
+      },
+      {
+        "name": "TO_DATE",
+        "type": "VARCHAR2",
+        "description": "Specifies the end date of the guest user"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Specifies the location of the guest user"
+      },
+      {
+        "name": "SSID",
+        "type": "VARCHAR2",
+        "description": "Specifies the SSID of guest user"
+      },
+      {
+        "name": "GROUP_TAG",
+        "type": "VARCHAR2",
+        "description": "Specifies the group tag of guest user"
+      },
+      {
+        "name": "GUEST_PERSON_VISITED",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest person visited"
+      },
+      {
+        "name": "GUEST_REASON_FOR_VISIT",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest reason for visit"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the NAS IP address"
+      },
+      {
+        "name": "USER_LINK",
+        "type": "CHAR",
+        "description": "Specifies the user link"
+      },
+      {
+        "name": "GUEST_LINK",
+        "type": "CHAR",
+        "description": "Specifies the guest link"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "TIME_SPENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the time spent"
+      },
+      {
+        "name": "LOGGED_IN",
+        "type": "VARCHAR2",
+        "description": "Specifies when logged in"
+      },
+      {
+        "name": "LOGGED_OUT",
+        "type": "VARCHAR2",
+        "description": "Specifies when logged out"
+      },
+      {
+        "name": "OPTIONAL_DATA",
+        "type": "VARCHAR2",
+        "description": "Specifies the optional data"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Specifies the identity store to which the user belongs"
+      },
+      {
+        "name": "NAD_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the NAD address"
+      },
+      {
+        "name": "SERVER",
+        "type": "VARCHAR2",
+        "description": "Specifies the ISE node"
+      },
+      {
+        "name": "SPONSOR_USER_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor user details"
+      },
+      {
+        "name": "GUEST_USER_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest user details"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the MAC address"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      },
+      {
+        "name": "SPONSOR_USERNAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the sponsor user name"
+      },
+      {
+        "name": "GUEST_USERNAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the guest user name"
+      },
+      {
+        "name": "GUEST_USERS",
+        "type": "CLOB",
+        "description": "Specifies the guest users"
+      },
+      {
+        "name": "OPERATION",
+        "type": "VARCHAR2",
+        "description": "Specifies the operation"
+      },
+      {
+        "name": "AUP_ACCEPTANCE",
+        "type": "VARCHAR2",
+        "description": "Specifies the AUP acceptance"
+      },
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was stored"
+      },
+      {
+        "name": "MESSAGE",
+        "type": "VARCHAR2",
+        "description": "Message for guest"
+      }
+    ]
+  },
+  "profiled_endpoints_summary": {
+    "view": "PROFILED_ENDPOINTS_SUMMARY",
+    "label": "Profiled Endpoints Summary",
+    "description": "Displays profiling details about endpoints that are accessing the network",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Endpoint ID"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Endpoint profile"
+      },
+      {
+        "name": "SOURCE",
+        "type": "VARCHAR2",
+        "description": "Source name"
+      },
+      {
+        "name": "HOST",
+        "type": "VARCHAR2",
+        "description": "Host name"
+      },
+      {
+        "name": "ENDPOINT_ACTION_NAME",
+        "type": "VARCHAR2",
+        "description": "Endpoint action name"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Message code"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group name"
+      }
+    ]
+  },
+  "profiling_policies": {
+    "view": "PROFILING_POLICIES",
+    "label": "Profiling Policies",
+    "description": "List and details of all endpoint profiles present on ISE",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "PROFILING_POLICY_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of Profiling Policy"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of Profiling Policy"
+      }
+    ]
+  },
+  "pxgrid_direct_data": {
+    "view": "PXGRID_DIRECT_DATA",
+    "label": "PXGRID Direct Data",
+    "description": "Provides the details of the connector and the data it retrieves.",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "EDDA_ID",
+        "type": "VARCHAR2",
+        "description": "The unique identifier as specified in the connector configuration"
+      },
+      {
+        "name": "CONNECTOR_TYPE",
+        "type": "VARCHAR2",
+        "description": "The connector type as specified in the connector configuration"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "VARCHAR2",
+        "description": "The time when record created"
+      },
+      {
+        "name": "BULK_ID",
+        "type": "VARCHAR2",
+        "description": "The Bulk ID"
+      },
+      {
+        "name": "VERSION",
+        "type": "VARCHAR2",
+        "description": "The connector version"
+      },
+      {
+        "name": "VERSION_TYPE",
+        "type": "VARCHAR2",
+        "description": "The connector version type"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "The connector name"
+      },
+      {
+        "name": "DATA",
+        "type": "VARCHAR2",
+        "description": "The data parsed by the connector in JSON format"
+      }
+    ]
+  },
+  "radius_accounting": {
+    "view": "RADIUS_ACCOUNTING",
+    "label": "RADIUS Accounting",
+    "description": "This provides details of all the radius accounting records",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "VN",
+        "type": "VARCHAR2",
+        "description": "Information of Virtual Network"
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Authorization policy"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Failure reason"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "CISCO_H323_SETUP_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 setup time"
+      },
+      {
+        "name": "CISCO_H323_CONNECT_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 connect time"
+      },
+      {
+        "name": "CISCO_H323_DISCONNECT_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 disconnect time"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "STARTED",
+        "type": "NUMBER",
+        "description": "Started"
+      },
+      {
+        "name": "STOPPED",
+        "type": "NUMBER",
+        "description": "Stopped"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "FRAMED IPV6 address"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "ISE node"
+      },
+      {
+        "name": "SYSLOG_MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Message code"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Session ID"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "ACCT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Unique numeric string identifying the server session"
+      },
+      {
+        "name": "ACCT_STATUS_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies whether accounting packet starts or stops a bridging, routing, or terminal server session."
+      },
+      {
+        "name": "ACCT_SESSION_TIME",
+        "type": "NUMBER",
+        "description": "Length of time (in seconds) for which the session has been logged in"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "FRAMED_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Framed protocol"
+      },
+      {
+        "name": "ACCT_INPUT_OCTETS",
+        "type": "VARCHAR2",
+        "description": "Number of octets received during the session"
+      },
+      {
+        "name": "ACCT_OUTPUT_OCTETS",
+        "type": "VARCHAR2",
+        "description": "Number of octets sent during the session"
+      },
+      {
+        "name": "ACCT_INPUT_PACKETS",
+        "type": "NUMBER",
+        "description": "Number of packets received during the session"
+      },
+      {
+        "name": "ACCT_OUTPUT_PACKETS",
+        "type": "NUMBER",
+        "description": "Number of octets sent during the session"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address"
+      },
+      {
+        "name": "NAS_PORT",
+        "type": "VARCHAR2",
+        "description": "Physical port number of the NAS (Network Access Server) originating the request"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "The IP address of the NAS originating the request"
+      },
+      {
+        "name": "ACCT_TERMINATE_CAUSE",
+        "type": "VARCHAR2",
+        "description": "Reason a connection was terminated"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Audit session ID"
+      },
+      {
+        "name": "ACCT_MULTI_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Multi session ID"
+      },
+      {
+        "name": "ACCT_AUTHENTIC",
+        "type": "VARCHAR2",
+        "description": "Authentication"
+      },
+      {
+        "name": "TERMINATION_ACTION",
+        "type": "VARCHAR2",
+        "description": "0 Default 1 RADIUS-Request"
+      },
+      {
+        "name": "SESSION_TIMEOUT",
+        "type": "VARCHAR2",
+        "description": "Session timeout"
+      },
+      {
+        "name": "IDLE_TIMEOUT",
+        "type": "VARCHAR2",
+        "description": "Idle timeout"
+      },
+      {
+        "name": "ACCT_INTERIM_INTERVAL",
+        "type": "VARCHAR2",
+        "description": "Number of seconds between each transmittal of an interim update for a specific session"
+      },
+      {
+        "name": "ACCT_DELAY_TIME",
+        "type": "VARCHAR2",
+        "description": "Length of time (in seconds) for which the NAS has been sending the same accounting packet"
+      },
+      {
+        "name": "EVENT_TIMESTAMP",
+        "type": "VARCHAR2",
+        "description": "The date and time that this event occurred on the NAS"
+      },
+      {
+        "name": "NAS_IDENTIFIER",
+        "type": "VARCHAR2",
+        "description": "NAS ID"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "NAS port ID"
+      },
+      {
+        "name": "ACCT_TUNNEL_CONNECTION",
+        "type": "VARCHAR2",
+        "description": "Tunnel connection"
+      },
+      {
+        "name": "ACCT_TUNNEL_PACKET_LOST",
+        "type": "VARCHAR2",
+        "description": "Packet lost"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "Network device group"
+      },
+      {
+        "name": "SERVICE_SELECTION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Service selection policy"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store"
+      },
+      {
+        "name": "AD_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "AD domain"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group"
+      }
+    ]
+  },
+  "radius_accounting_week": {
+    "view": "RADIUS_ACCOUNTING_WEEK",
+    "label": "RADIUS Accounting Week",
+    "description": "This is performance oriented view which contains all the radius accounting records for the last seven days",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "VN",
+        "type": "VARCHAR2",
+        "description": "Information of Virtual Network"
+      },
+      {
+        "name": "ACCT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Unique numeric string identifying the server session"
+      },
+      {
+        "name": "ACCT_STATUS_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies whether accounting packet starts or stops a bridging, routing, or terminal server session."
+      },
+      {
+        "name": "ACCT_SESSION_TIME",
+        "type": "NUMBER",
+        "description": "Length of time (in seconds) for which the session has been logged in"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "FRAMED_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Framed protocol"
+      },
+      {
+        "name": "ACCT_INPUT_OCTETS",
+        "type": "VARCHAR2",
+        "description": "Number of octets received during the session"
+      },
+      {
+        "name": "ACCT_OUTPUT_OCTETS",
+        "type": "VARCHAR2",
+        "description": "Number of octets sent during the session"
+      },
+      {
+        "name": "ACCT_INPUT_PACKETS",
+        "type": "NUMBER",
+        "description": "Number of packets received during the session"
+      },
+      {
+        "name": "ACCT_OUTPUT_PACKETS",
+        "type": "NUMBER",
+        "description": "Number of octets sent during the session"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address"
+      },
+      {
+        "name": "NAS_PORT",
+        "type": "VARCHAR2",
+        "description": "Physical port number of the NAS (Network Access Server) originating the request"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "The IP address of the NAS originating the request"
+      },
+      {
+        "name": "ACCT_TERMINATE_CAUSE",
+        "type": "VARCHAR2",
+        "description": "Reason a connection was terminated"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Audit session ID"
+      },
+      {
+        "name": "ACCT_MULTI_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Multi session ID"
+      },
+      {
+        "name": "ACCT_AUTHENTIC",
+        "type": "VARCHAR2",
+        "description": "Authentication"
+      },
+      {
+        "name": "TERMINATION_ACTION",
+        "type": "VARCHAR2",
+        "description": "0 Default 1 RADIUS-Request"
+      },
+      {
+        "name": "SESSION_TIMEOUT",
+        "type": "VARCHAR2",
+        "description": "Session timeout"
+      },
+      {
+        "name": "IDLE_TIMEOUT",
+        "type": "VARCHAR2",
+        "description": "Idle timeout"
+      },
+      {
+        "name": "ACCT_INTERIM_INTERVAL",
+        "type": "VARCHAR2",
+        "description": "Number of seconds between each transmittal of an interim update for a specific session"
+      },
+      {
+        "name": "ACCT_DELAY_TIME",
+        "type": "VARCHAR2",
+        "description": "Length of time (in seconds) for which the NAS has been sending the same accounting packet"
+      },
+      {
+        "name": "EVENT_TIMESTAMP",
+        "type": "VARCHAR2",
+        "description": "The date and time that this event occurred on the NAS"
+      },
+      {
+        "name": "NAS_IDENTIFIER",
+        "type": "VARCHAR2",
+        "description": "NAS ID"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "NAS port ID"
+      },
+      {
+        "name": "ACCT_TUNNEL_CONNECTION",
+        "type": "VARCHAR2",
+        "description": "Tunnel connection"
+      },
+      {
+        "name": "ACCT_TUNNEL_PACKET_LOST",
+        "type": "VARCHAR2",
+        "description": "Packet lost"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "Network device group"
+      },
+      {
+        "name": "SERVICE_SELECTION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Service selection policy"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store"
+      },
+      {
+        "name": "AD_DOMAIN",
+        "type": "VARCHAR2",
+        "description": "AD domain"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group"
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Displays the authorization policy matched"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Failure reason"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "CISCO_H323_SETUP_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 setup time"
+      },
+      {
+        "name": "CISCO_H323_CONNECT_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 connect time"
+      },
+      {
+        "name": "CISCO_H323_DISCONNECT_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Cisco H323 disconnect time"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "STARTED",
+        "type": "NUMBER",
+        "description": "Started"
+      },
+      {
+        "name": "STOPPED",
+        "type": "NUMBER",
+        "description": "Stopped"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IPV6 address"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "ISE node"
+      },
+      {
+        "name": "SYSLOG_MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Message code"
+      },
+      {
+        "name": "SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Established ISE session ID"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      }
+    ]
+  },
+  "radius_authentications": {
+    "view": "RADIUS_AUTHENTICATIONS",
+    "label": "RADIUS Authentications",
+    "description": "This provides details of all the radius authentication records",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ORIG_CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "CHECKSUM",
+        "type": "VARCHAR2",
+        "description": "Checksum"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "ISE node"
+      },
+      {
+        "name": "SYSLOG_MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address of user"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store of user"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "User identity group"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Audit session ID"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Method of authentication"
+      },
+      {
+        "name": "AUTHENTICATION_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Protocol of authentication"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Network device type"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Network device location"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "The IP address of the NAS originating the request"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "Physical port number of the NAS (Network Access Server) originating the request"
+      },
+      {
+        "name": "NAS_PORT_TYPE",
+        "type": "VARCHAR2",
+        "description": "NAS port type"
+      },
+      {
+        "name": "AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "Authorization profiles"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Reason of failure"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "PASSED",
+        "type": "VARCHAR2",
+        "description": "Passed flag"
+      },
+      {
+        "name": "FAILED",
+        "type": "NUMBER",
+        "description": "Failed flag"
+      },
+      {
+        "name": "CREDENTIAL_CHECK",
+        "type": "VARCHAR2",
+        "description": "Credential check"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Endpoint matched profile"
+      },
+      {
+        "name": "MDM_SERVER_NAME",
+        "type": "VARCHAR2",
+        "description": "MDM server name"
+      },
+      {
+        "name": "POLICY_SET_NAME",
+        "type": "VARCHAR2",
+        "description": "Policy set name"
+      },
+      {
+        "name": "AUTHORIZATION_RULE",
+        "type": "VARCHAR2",
+        "description": "Authorization rule"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed ipv6 address"
+      }
+    ]
+  },
+  "radius_authentications_week": {
+    "view": "RADIUS_AUTHENTICATIONS_WEEK",
+    "label": "RADIUS Authentications Week",
+    "description": "This is performance oriented view which contains all the radius authentication records for the last seven days",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "ISE node"
+      },
+      {
+        "name": "SYSLOG_MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address of user"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store of user"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "User identity group"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Audit session ID"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Method of authentication"
+      },
+      {
+        "name": "AUTHENTICATION_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Protocol of authentication"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Network device type"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Network device location"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "The IP address of the NAS originating the request"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "Physical port number of the NAS (Network Access Server) originating the request"
+      },
+      {
+        "name": "NAS_PORT_TYPE",
+        "type": "VARCHAR2",
+        "description": "NAS port type"
+      },
+      {
+        "name": "AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "Authorization profiles"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Reason of failure"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "PASSED",
+        "type": "NUMBER",
+        "description": "Passed flag"
+      },
+      {
+        "name": "FAILED",
+        "type": "NUMBER",
+        "description": "Failed flag"
+      },
+      {
+        "name": "CREDENTIAL_CHECK",
+        "type": "VARCHAR2",
+        "description": "Credential check"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Endpoint matched profile"
+      },
+      {
+        "name": "MDM_SERVER_NAME",
+        "type": "VARCHAR2",
+        "description": "MDM server name"
+      },
+      {
+        "name": "POLICY_SET_NAME",
+        "type": "VARCHAR2",
+        "description": "Policy set name"
+      },
+      {
+        "name": "AUTHORIZATION_RULE",
+        "type": "VARCHAR2",
+        "description": "Authorization rule"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed ipv6 address"
+      },
+      {
+        "name": "ORIG_CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "CHECKSUM",
+        "type": "VARCHAR2",
+        "description": "Checksum"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "AUTHENTICATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Displays the authentication policy matched"
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Displays the authorization policy matched"
+      },
+      {
+        "name": "NAD_PROFILE_NAME",
+        "type": "VARCHAR2",
+        "description": "Displays the network device profile"
+      }
+    ]
+  },
+  "radius_authentication_summary": {
+    "view": "RADIUS_AUTHENTICATION_SUMMARY",
+    "label": "RADIUS Authentication Summary",
+    "description": "Displays an aggregate view of RADIUS authentications.",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Name of the ISE server used for authentication"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User name"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Mac address of the device the user is using"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "The Identity Store to which the user authenticated belongs to. Example - Internal Endpoints"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "The Identity Group to which the user belongs to. Example - Windows11-Workstation"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "The name of the network device used by the user to access network. Example - 9800CLWLC, Access-Switch-3K, 9800VWLC etc."
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The type of the network device used by the user to access network. Example - Wireless - IEEE 802.11"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "The location hierarchy of the the network device. Example - All Locations#My-Territory#US#Sanjose#BLDG5"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "The protocol used for authentication. Example - NDAC_SGT_Service, Default Network Access"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "ID of the NAD Port used. Example - GigabitEthernet1/0/14"
+      },
+      {
+        "name": "AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "The authorization profile applied. Example - PermitAccess, Machine-Access"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Reason for the failure, in case authentication was not successful"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "The security group classification of the device i.e the source SGT. Example - TrustedDevices, Quarantined_Systems"
+      },
+      {
+        "name": "TOTAL_RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "The total response time required for authentication"
+      },
+      {
+        "name": "MAX_RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "The maximum response time required for authentication"
+      },
+      {
+        "name": "PASSED_COUNT",
+        "type": "NUMBER",
+        "description": "The number of passed authentication"
+      },
+      {
+        "name": "FAILED_COUNT",
+        "type": "NUMBER",
+        "description": "Number of failed authentication"
+      }
+    ]
+  },
+  "radius_errors_view": {
+    "view": "RADIUS_ERRORS_VIEW",
+    "label": "RADIUS Errors",
+    "description": "Enables you to check for RADIUS Requests Dropped, EAP connection time outs and unknown NADs",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "RESPONSE",
+        "type": "VARCHAR2",
+        "description": "Displays the response"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Execution steps"
+      },
+      {
+        "name": "OTHER_ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Other attributes"
+      },
+      {
+        "name": "AUTHENTICATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Authentication policy"
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Authorization policy"
+      },
+      {
+        "name": "OTHER_ATTRIBUTES_STRING",
+        "type": "CLOB",
+        "description": "Other attributes"
+      },
+      {
+        "name": "RESPONSE_TIME",
+        "type": "NUMBER",
+        "description": "Response time"
+      },
+      {
+        "name": "PASSED",
+        "type": "VARCHAR2",
+        "description": "Passed flag"
+      },
+      {
+        "name": "FAILED",
+        "type": "NUMBER",
+        "description": "Failed flag"
+      },
+      {
+        "name": "CREDENTIAL_CHECK",
+        "type": "VARCHAR2",
+        "description": "Credential check"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Endpoint matched profile"
+      },
+      {
+        "name": "MDM_SERVER_NAME",
+        "type": "VARCHAR2",
+        "description": "MDM server name"
+      },
+      {
+        "name": "NAS_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "NAS IPV6 address"
+      },
+      {
+        "name": "FRAMED_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IPV6 address"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Message text"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "User's claimed identity"
+      },
+      {
+        "name": "USER_TYPE",
+        "type": "VARCHAR2",
+        "description": "User type"
+      },
+      {
+        "name": "CALLING_STATION_ID",
+        "type": "VARCHAR2",
+        "description": "Calling station ID"
+      },
+      {
+        "name": "ACCESS_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Access service"
+      },
+      {
+        "name": "FRAMED_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Framed IP address"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group"
+      },
+      {
+        "name": "AUDIT_SESSION_ID",
+        "type": "VARCHAR2",
+        "description": "Unique numeric string identifying the server session"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Authentication method"
+      },
+      {
+        "name": "AUTHENTICATION_PROTOCOL",
+        "type": "VARCHAR2",
+        "description": "Authentication protocol"
+      },
+      {
+        "name": "SERVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "The Type of Service the user has requested"
+      },
+      {
+        "name": "NETWORK_DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Network device name"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Device type"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Location"
+      },
+      {
+        "name": "NAS_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address of NAS"
+      },
+      {
+        "name": "NAS_PORT_ID",
+        "type": "VARCHAR2",
+        "description": "NAS port ID"
+      },
+      {
+        "name": "NAS_PORT_TYPE",
+        "type": "VARCHAR2",
+        "description": "NAS port type"
+      },
+      {
+        "name": "SELECTED_AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "Authorization profile used after authentication"
+      },
+      {
+        "name": "POSTURE_STATUS",
+        "type": "VARCHAR2",
+        "description": "Posture status"
+      },
+      {
+        "name": "SECURITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Security group"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Failure reason"
+      }
+    ]
+  },
+  "registered_endpoints": {
+    "view": "REGISTERED_ENDPOINTS",
+    "label": "Registered Endpoints",
+    "description": "Displays all personal devices registered by the employees",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "ENDPOINT_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the MAC address of endpoint"
+      },
+      {
+        "name": "ENDPOINT_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Specifies the profiling policy under which endpoint got profiled"
+      },
+      {
+        "name": "ENDPOINT_STATIC_ASSIGNMENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the endpoint static assignment status"
+      },
+      {
+        "name": "STATIC_ASSIGNMENT_GROUP",
+        "type": "VARCHAR2",
+        "description": "Specifies If endpoint statically assigned to user identity group"
+      },
+      {
+        "name": "NMAP_SUBNET_SCANID",
+        "type": "NUMBER",
+        "description": "NMAP subnet of registered end points"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when record was created"
+      },
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time when the record was last updated"
+      },
+      {
+        "name": "IDENTITY",
+        "type": "VARCHAR2",
+        "description": "Specifies the portal user"
+      },
+      {
+        "name": "DEVICE_REGISTRATION_STATUS",
+        "type": "VARCHAR2",
+        "description": "Specifies if device is registered"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Specifies the identity group"
+      },
+      {
+        "name": "SERVER",
+        "type": "VARCHAR2",
+        "description": "Specifies the ISE node"
+      }
+    ]
+  },
+  "security_groups": {
+    "view": "SECURITY_GROUPS",
+    "label": "Security Groups",
+    "description": "List and details of security groups",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Specified the name of the security group"
+      },
+      {
+        "name": "SGT_DEC",
+        "type": "NUMBER",
+        "description": "Specifies the Security Group Tag in decimal"
+      },
+      {
+        "name": "SGT_HEX",
+        "type": "VARCHAR2",
+        "description": "Specifies the Security Group Tag in hexadecimal"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Describes the security group"
+      },
+      {
+        "name": "LEARNED_FROM",
+        "type": "VARCHAR2",
+        "description": "Specifies where learned from"
+      }
+    ]
+  },
+  "security_group_acls": {
+    "view": "SECURITY_GROUP_ACLS",
+    "label": "Security Group Acls",
+    "description": "List and details of Security group ACLs",
+    "internal": false,
+    "time_col": null,
+    "columns": [
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the Security group ACL"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of the security group ACL"
+      },
+      {
+        "name": "IP_VERSION",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP version (ipv4 or ipv6)"
+      }
+    ]
+  },
+  "sponsor_login_and_audit": {
+    "view": "SPONSOR_LOGIN_AND_AUDIT",
+    "label": "Sponsor Login And Audit",
+    "description": "Tracks login activity by sponsor at the sponsor portal and guest related operation performed by sponsor",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "SPONSER_USER_NAME",
+        "type": "VARCHAR2",
+        "description": "User name of sponsor"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "IP address"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "MAC address"
+      },
+      {
+        "name": "PORTAL_NAME",
+        "type": "VARCHAR2",
+        "description": "Portal name"
+      },
+      {
+        "name": "RESULT",
+        "type": "VARCHAR2",
+        "description": "Result"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store"
+      },
+      {
+        "name": "OPERATION",
+        "type": "VARCHAR2",
+        "description": "Operation"
+      },
+      {
+        "name": "GUEST_USERNAME",
+        "type": "VARCHAR2",
+        "description": "User name of guest"
+      },
+      {
+        "name": "GUEST_STATUS",
+        "type": "VARCHAR2",
+        "description": "Status of guest"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Reason of failure"
+      },
+      {
+        "name": "OPTIONAL_DATA",
+        "type": "VARCHAR2",
+        "description": "Optional data"
+      },
+      {
+        "name": "PSN_HOSTNAME",
+        "type": "VARCHAR2",
+        "description": "Hostname of PSN"
+      },
+      {
+        "name": "USER_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of user"
+      },
+      {
+        "name": "GUEST_DETAILS",
+        "type": "VARCHAR2",
+        "description": "Details of guest"
+      },
+      {
+        "name": "GUEST_USERS",
+        "type": "CLOB",
+        "description": "Guest users"
+      }
+    ]
+  },
+  "system_diagnostics_view": {
+    "view": "SYSTEM_DIAGNOSTICS_VIEW",
+    "label": "System Diagnostics",
+    "description": "Provides details about the status of the Cisco ISE nodes. If a Cisco ISE node is unable to register, you can review this report to troubleshoot the issue",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_SEVERITY",
+        "type": "VARCHAR2",
+        "description": "Displays the severity of message"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "CATEGORY",
+        "type": "VARCHAR2",
+        "description": "Displays the category"
+      },
+      {
+        "name": "DIAGNOSTIC_INFO",
+        "type": "VARCHAR2",
+        "description": "Displays the diagnostic info"
+      }
+    ]
+  },
+  "system_summary": {
+    "view": "SYSTEM_SUMMARY",
+    "label": "System Summary",
+    "description": "Displays system health information like CPU utilization , storage utilization , number of CPU etc",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record made"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Name of ISE node"
+      },
+      {
+        "name": "CPU_UTILIZATION",
+        "type": "NUMBER",
+        "description": "Specifies the CPU utilization in percentage"
+      },
+      {
+        "name": "CPU_COUNT",
+        "type": "NUMBER",
+        "description": "Specifies the number of CPU cores"
+      },
+      {
+        "name": "MEMORY_UTILIZATION",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of memory utilization"
+      },
+      {
+        "name": "DISKSPACE_ROOT",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in root folder"
+      },
+      {
+        "name": "DISKSPACE_BOOT",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in boot folder"
+      },
+      {
+        "name": "DISKSPACE_OPT",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in opt folder"
+      },
+      {
+        "name": "DISKSPACE_STOREDCONFIG",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in storedconfig folder"
+      },
+      {
+        "name": "DISKSPACE_TMP",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in tmp folder"
+      },
+      {
+        "name": "DISKSPACE_RUNTIME",
+        "type": "NUMBER",
+        "description": "Specifies the percentage of storage utilized in runtime"
+      }
+    ]
+  },
+  "tacacs_accounting": {
+    "view": "TACACS_ACCOUNTING",
+    "label": "TACACS Accounting",
+    "description": "This view contains details of TACACS accounting records",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database record primary key for the table"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group to which users belongs to"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "VARCHAR2",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication service"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Protocol used for authentication"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the Authentication Privilege Level"
+      },
+      {
+        "name": "ATTRIBUTES",
+        "type": "VARCHAR2",
+        "description": "Specifies the attributes"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the message text"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Specifies the execution steps"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the status is pass or failed"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Syslog message code"
+      },
+      {
+        "name": "COMMAND",
+        "type": "VARCHAR2",
+        "description": "Specifies the command"
+      },
+      {
+        "name": "COMMAND_ARGS",
+        "type": "VARCHAR2",
+        "description": "Specifies the command arguments"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "ACCOUNTING_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the accounting type"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      }
+    ]
+  },
+  "tacacs_accounting_last_two_days": {
+    "view": "TACACS_ACCOUNTING_LAST_TWO_DAYS",
+    "label": "TACACS Accounting Last Two Days",
+    "description": "This is performance oriented view which contains all the TACACS accounting records for the last two days",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database record primary key for the table"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group to which users belongs to"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication service"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Protocol used for authentication"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication privilege level"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the status is pass or failed"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Syslog message code"
+      },
+      {
+        "name": "COMMAND",
+        "type": "VARCHAR2",
+        "description": "Specifies the command"
+      },
+      {
+        "name": "COMMAND_ARGS",
+        "type": "VARCHAR2",
+        "description": "Specifies the command arguments"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "ACCOUNTING_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the accounting type"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      },
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      }
+    ]
+  },
+  "tacacs_authentication": {
+    "view": "TACACS_AUTHENTICATION",
+    "label": "TACACS Authentication",
+    "description": "This provides details of all the TACACS authentication records",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "SELECTED_AUTHORIZATION_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Authorization profile used after authentication"
+      },
+      {
+        "name": "DESTINATION_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the destination IP address"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the authentication succeeded or failed"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store to which users belongs to"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database record primary key for the table"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "VARCHAR2",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Syslog message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "AUTHENTICATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication policy"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the Authentication Privilege Level"
+      },
+      {
+        "name": "ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Specifies the attributes"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the message text"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Specifies the execution steps"
+      },
+      {
+        "name": "AUTHENTICATION_ACTION",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication action"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication service"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      }
+    ]
+  },
+  "tacacs_authentication_last_two_days": {
+    "view": "TACACS_AUTHENTICATION_LAST_TWO_DAYS",
+    "label": "TACACS Authentication Last Two Days",
+    "description": "This is performance oriented view which contains all the TACACS authentication records for the last two days",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database record primary key for the table"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "NUMBER",
+        "description": "Syslog message code"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "AUTHENTICATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication policy"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication privilege level"
+      },
+      {
+        "name": "AUTHENTICATION_ACTION",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication action"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication service"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      },
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "SELECTED_AUTHORIZATION_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Authorization profile used after authentication"
+      },
+      {
+        "name": "DESTINATION_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the destination IP address"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the authentication succeeded or failed"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store to which users belongs to"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      }
+    ]
+  },
+  "tacacs_authentication_summary": {
+    "view": "TACACS_AUTHENTICATION_SUMMARY",
+    "label": "TACACS Authentication Summary",
+    "description": "Display aggregate view of TACACS authentications",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "IDENTITY_STORE",
+        "type": "VARCHAR2",
+        "description": "Identity store to which users belongs to"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUP",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "AUTHORIZATION_PROFILES",
+        "type": "VARCHAR2",
+        "description": "Specifies the authorization profiles"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "PASSED_COUNT",
+        "type": "NUMBER",
+        "description": "Number of successful authentication"
+      },
+      {
+        "name": "FAILED_COUNT",
+        "type": "NUMBER",
+        "description": "Number of failed authentication"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      }
+    ]
+  },
+  "tacacs_authorization": {
+    "view": "TACACS_AUTHORIZATION",
+    "label": "TACACS Authorization",
+    "description": "This provides details of all the TACACS authorization records",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "VARCHAR2",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Specifies the attributes"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Specifies the execution steps"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the status is pass or failed"
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the operational message text"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUP",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the authorization policy"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the Authentication Privilege Level"
+      },
+      {
+        "name": "AUTHORIZATION_REQUEST_ATTR",
+        "type": "VARCHAR2",
+        "description": "Specifies the request attribute"
+      },
+      {
+        "name": "AUTHORIZATION_RESPONSE_ATTR",
+        "type": "CLOB",
+        "description": "Specifies the response attribute"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "SHELL_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Specifies the TACACS Profiles"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication method"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "MATCHED_COMMAND_SET",
+        "type": "VARCHAR2",
+        "description": "Matched TACACS command sets"
+      },
+      {
+        "name": "COMMAND_FROM_DEVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the command in the matched command set"
+      }
+    ]
+  },
+  "tacacs_authorization_last_two_days": {
+    "view": "TACACS_AUTHORIZATION_LAST_TWO_DAYS",
+    "label": "TACACS Authorization Last Two Days",
+    "description": "This is performance oriented view which contains all the TACACS authorization records for the last two days.",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Database unique ID"
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "VARCHAR2",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Specifies the attributes"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Specifies the execution steps"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the status is pass or failed"
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the operational message text"
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUP",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the reason for failure"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "AUTHORIZATION_POLICY",
+        "type": "VARCHAR2",
+        "description": "Specifies the authorization policy"
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the Authentication Privilege Level"
+      },
+      {
+        "name": "AUTHORIZATION_REQUEST_ATTR",
+        "type": "VARCHAR2",
+        "description": "Specifies the request attribute"
+      },
+      {
+        "name": "AUTHORIZATION_RESPONSE_ATTR",
+        "type": "CLOB",
+        "description": "Specifies the response attribute"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "SHELL_PROFILE",
+        "type": "VARCHAR2",
+        "description": "Specifies the TACACS Profiles"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication method"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      },
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "MATCHED_COMMAND_SET",
+        "type": "VARCHAR2",
+        "description": "Matched TACACS command sets"
+      },
+      {
+        "name": "COMMAND_FROM_DEVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the command in the matched command set"
+      }
+    ]
+  },
+  "tacacs_command_accounting": {
+    "view": "TACACS_COMMAND_ACCOUNTING",
+    "label": "TACACS Command Accounting",
+    "description": "Displays details of TACACS command accounting",
+    "internal": false,
+    "time_col": "GENERATED_TIME",
+    "columns": [
+      {
+        "name": "LOCATION",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device location of the AAA client"
+      },
+      {
+        "name": "EPOCH_TIME",
+        "type": "NUMBER",
+        "description": "Specifies the unix epoch time"
+      },
+      {
+        "name": "ID",
+        "type": "NUMBER",
+        "description": "Unique database ID"
+      },
+      {
+        "name": "USERNAME",
+        "type": "VARCHAR2",
+        "description": "Shows the user name of the device administrator."
+      },
+      {
+        "name": "GENERATED_TIME",
+        "type": "VARCHAR2",
+        "description": "Shows the syslog generation time based on when a particular event was triggered"
+      },
+      {
+        "name": "LOGGED_TIME",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Shows the name of the ISE node through which the access request is processed."
+      },
+      {
+        "name": "AUTHENTICATION_PRIVILEGE_LEVEL",
+        "type": "VARCHAR2",
+        "description": "Specifies the Authentication Privilege Level"
+      },
+      {
+        "name": "ATTRIBUTES",
+        "type": "BLOB",
+        "description": "Specifies the attributes"
+      },
+      {
+        "name": "EXECUTION_STEPS",
+        "type": "VARCHAR2",
+        "description": "Specifies the execution steps"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the status pass or failed"
+      },
+      {
+        "name": "EVENT",
+        "type": "VARCHAR2",
+        "description": "Specifies the event like Accounting"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the message text"
+      },
+      {
+        "name": "FAILURE_REASON",
+        "type": "VARCHAR2",
+        "description": "Specifies the failure reason"
+      },
+      {
+        "name": "IDENTITY_GROUP",
+        "type": "VARCHAR2",
+        "description": "Identity group to which users belongs to"
+      },
+      {
+        "name": "SESSION_KEY",
+        "type": "VARCHAR2",
+        "description": "Shows the session keys (found in the EAP success or EAP failure messages) returned by ISE to the network device."
+      },
+      {
+        "name": "DEVICE_NAME",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "IP of the network device (The AAA client)"
+      },
+      {
+        "name": "DEVICE_GROUPS",
+        "type": "VARCHAR2",
+        "description": "To which network device group the AAA client belongs to"
+      },
+      {
+        "name": "DEVICE_PORT",
+        "type": "VARCHAR2",
+        "description": "Shows the network device port number through which the access request is made."
+      },
+      {
+        "name": "DEVICE_IPV6",
+        "type": "VARCHAR2",
+        "description": "IPV6 address of the network device (The AAA Client)"
+      },
+      {
+        "name": "REMOTE_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Shows the IP address, MAC address, or any other string that uniquely identifies the end station"
+      },
+      {
+        "name": "AUTHENTICATION_METHOD",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication method"
+      },
+      {
+        "name": "AUTHENTICATION_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication type"
+      },
+      {
+        "name": "AUTHENTICATION_SERVICE",
+        "type": "VARCHAR2",
+        "description": "Specifies the authentication service"
+      },
+      {
+        "name": "COMMAND",
+        "type": "VARCHAR2",
+        "description": "Specifies the command"
+      },
+      {
+        "name": "COMMAND_ARGS",
+        "type": "VARCHAR2",
+        "description": "Specifies the command arguments"
+      },
+      {
+        "name": "DEVICE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Shows the device group device type of the AAA client"
+      }
+    ]
+  },
+  "threat_events": {
+    "view": "THREAT_EVENTS",
+    "label": "Threat Events",
+    "description": "Log of threat events received from various sources",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the MAC address"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      },
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Unique database identifier"
+      },
+      {
+        "name": "SEVERITY",
+        "type": "VARCHAR2",
+        "description": "Specifies the severity"
+      },
+      {
+        "name": "TITLE",
+        "type": "VARCHAR2",
+        "description": "Specifies the title"
+      },
+      {
+        "name": "EVENT_TIME",
+        "type": "VARCHAR2",
+        "description": "Specifies the event time"
+      },
+      {
+        "name": "VENDOR_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the vendor name"
+      },
+      {
+        "name": "SOURCE",
+        "type": "VARCHAR2",
+        "description": "Specifies the source"
+      },
+      {
+        "name": "INCIDENT_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the incident type"
+      },
+      {
+        "name": "DETAILS",
+        "type": "VARCHAR2",
+        "description": "Gives further details"
+      }
+    ]
+  },
+  "upspolicy": {
+    "view": "UPSPOLICY",
+    "label": "Upspolicy",
+    "description": "Internal view. Not to be used.",
+    "internal": true,
+    "time_col": null,
+    "columns": []
+  },
+  "upspolicyset": {
+    "view": "UPSPOLICYSET",
+    "label": "Upspolicyset",
+    "description": "Internal view. Not to be used.",
+    "internal": true,
+    "time_col": null,
+    "columns": []
+  },
+  "upspolicyset_policies": {
+    "view": "UPSPOLICYSET_POLICIES",
+    "label": "Upspolicyset Policies",
+    "description": "Internal view. Not to be used.",
+    "internal": true,
+    "time_col": null,
+    "columns": []
+  },
+  "user_identity_groups": {
+    "view": "USER_IDENTITY_GROUPS",
+    "label": "User Identity Groups",
+    "description": "This will provide details of all the user identity groups",
+    "internal": false,
+    "time_col": "CREATE_TIME",
+    "columns": [
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Primary key for user identity groups"
+      },
+      {
+        "name": "NAME",
+        "type": "VARCHAR2",
+        "description": "Name of the group"
+      },
+      {
+        "name": "DESCRIPTION",
+        "type": "VARCHAR2",
+        "description": "Description of the group"
+      },
+      {
+        "name": "CREATED_BY",
+        "type": "VARCHAR2",
+        "description": "The group was created by whom"
+      },
+      {
+        "name": "CREATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "When the record was created"
+      },
+      {
+        "name": "UPDATE_TIME",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "When the record was updated"
+      },
+      {
+        "name": "STATUS",
+        "type": "VARCHAR2",
+        "description": "Shows if the group is active"
+      }
+    ]
+  },
+  "user_password_changes": {
+    "view": "USER_PASSWORD_CHANGES",
+    "label": "User Password Changes",
+    "description": "Displays verification about employees password changes",
+    "internal": false,
+    "time_col": "TIMESTAMP",
+    "columns": [
+      {
+        "name": "TIMESTAMP_TIMEZONE",
+        "type": "TIMESTAMP(6) WITH TIME ZONE",
+        "description": "Time with timezone when record added"
+      },
+      {
+        "name": "TIMESTAMP",
+        "type": "TIMESTAMP(6)",
+        "description": "Time when record added"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Displays the hostname of the ISE server"
+      },
+      {
+        "name": "MESSAGE_CODE",
+        "type": "VARCHAR2",
+        "description": "Displays the message code"
+      },
+      {
+        "name": "ADMIN_NAME",
+        "type": "VARCHAR2",
+        "description": "Admin name"
+      },
+      {
+        "name": "ADMIN_IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Admin IP address"
+      },
+      {
+        "name": "ADMIN_IPV6_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Admin IPV6 address"
+      },
+      {
+        "name": "ADMIN_INTERFACE",
+        "type": "VARCHAR2",
+        "description": "Admin interface used"
+      },
+      {
+        "name": "MESSAGE_CLASS",
+        "type": "VARCHAR2",
+        "description": "Message class"
+      },
+      {
+        "name": "MESSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Displays the message text"
+      },
+      {
+        "name": "OPERATOR_NAME",
+        "type": "VARCHAR2",
+        "description": "Operator name"
+      },
+      {
+        "name": "USER_ADMIN_FLAG",
+        "type": "VARCHAR2",
+        "description": "User admin flag"
+      },
+      {
+        "name": "ACCOUNT_NAME",
+        "type": "VARCHAR2",
+        "description": "Account name"
+      },
+      {
+        "name": "DEVICE_IP",
+        "type": "VARCHAR2",
+        "description": "Device IP"
+      },
+      {
+        "name": "IDENTITY_STORE_NAME",
+        "type": "VARCHAR2",
+        "description": "Identity store name"
+      },
+      {
+        "name": "CHANGE_PASSWORD_METHOD",
+        "type": "VARCHAR2",
+        "description": "Method of password change"
+      },
+      {
+        "name": "AUDIT_PASSWORD_TYPE",
+        "type": "VARCHAR2",
+        "description": "Password type"
+      }
+    ]
+  },
+  "vulnerability_assessment_failures": {
+    "view": "VULNERABILITY_ASSESSMENT_FAILURES",
+    "label": "Vulnerability Assessment Failures",
+    "description": "This report contains details of endpoints for which Vulnerability Assessment failed",
+    "internal": false,
+    "time_col": "LOGGED_AT",
+    "columns": [
+      {
+        "name": "LOGGED_AT",
+        "type": "TIMESTAMP(6)",
+        "description": "Shows the time when the syslog was processed and stored by the Monitoring node"
+      },
+      {
+        "name": "ID",
+        "type": "VARCHAR2",
+        "description": "Unique database ID"
+      },
+      {
+        "name": "ADAPTER_INSTANCE_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the adapter instance name"
+      },
+      {
+        "name": "ADAPTER_INSTANCE_ID",
+        "type": "VARCHAR2",
+        "description": "Specifies the adapter instance ID"
+      },
+      {
+        "name": "VENDOR_NAME",
+        "type": "VARCHAR2",
+        "description": "Specifies the vendor name"
+      },
+      {
+        "name": "ISE_NODE",
+        "type": "VARCHAR2",
+        "description": "Specifies the ACS instance"
+      },
+      {
+        "name": "MAC_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the MAC address"
+      },
+      {
+        "name": "IP_ADDRESS",
+        "type": "VARCHAR2",
+        "description": "Specifies the IP address"
+      },
+      {
+        "name": "OPERATION_MESSSAGE_TEXT",
+        "type": "VARCHAR2",
+        "description": "Specifies the operation message text"
+      },
+      {
+        "name": "MESSAGE_TYPE",
+        "type": "VARCHAR2",
+        "description": "Specifies the message type"
+      }
+    ]
+  }
+}

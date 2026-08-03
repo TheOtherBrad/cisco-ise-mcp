@@ -1,0 +1,643 @@
+[
+  {
+    "tool": "repo_list",
+    "method": "GET",
+    "path": "/api/v1/repository",
+    "params": [],
+    "body": false,
+    "desc": "Get list of repositories",
+    "category": "Repository"
+  },
+  {
+    "tool": "repo_get",
+    "method": "GET",
+    "path": "/api/v1/repository/{name}",
+    "params": [
+      "name"
+    ],
+    "body": false,
+    "desc": "Get a specific repository",
+    "category": "Repository"
+  },
+  {
+    "tool": "repo_create",
+    "method": "POST",
+    "path": "/api/v1/repository",
+    "params": [],
+    "body": true,
+    "desc": "Create a new repository",
+    "category": "Repository"
+  },
+  {
+    "tool": "repo_update",
+    "method": "PUT",
+    "path": "/api/v1/repository/{name}",
+    "params": [
+      "name"
+    ],
+    "body": true,
+    "desc": "Update the definition of a specific repository",
+    "category": "Repository"
+  },
+  {
+    "tool": "repo_delete",
+    "method": "DELETE",
+    "path": "/api/v1/repository/{name}",
+    "params": [
+      "name"
+    ],
+    "body": false,
+    "desc": "Delete a specific repository",
+    "category": "Repository"
+  },
+  {
+    "tool": "repo_list_files",
+    "method": "GET",
+    "path": "/api/v1/repository/{name}/files",
+    "params": [
+      "name"
+    ],
+    "body": false,
+    "desc": "Get list of files in a repository",
+    "category": "Repository"
+  },
+  {
+    "tool": "backup_create",
+    "method": "POST",
+    "path": "/api/v1/backup-restore/config/backup",
+    "params": [],
+    "body": true,
+    "desc": "Take the config DB backup now by providing the name of the backup,repository name and encryption key. The API returns the task ID. Use the Task Service status API to get the status of the backup job",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "backup_cancel",
+    "method": "POST",
+    "path": "/api/v1/backup-restore/config/cancel-backup",
+    "params": [],
+    "body": true,
+    "desc": "Cancel the running backup",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "backup_restore",
+    "method": "POST",
+    "path": "/api/v1/backup-restore/config/restore",
+    "params": [],
+    "body": true,
+    "desc": "Restore a config DB backup by giving the name of the backup file, repository name and encryption key. The API returns the task ID. Use the Task Service status API to get the status of the restore job",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "backup_last_status",
+    "method": "GET",
+    "path": "/api/v1/backup-restore/config/last-backup-status",
+    "params": [],
+    "body": false,
+    "desc": "Gives the last backup status",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "backup_schedule_create",
+    "method": "POST",
+    "path": "/api/v1/backup-restore/config/schedule-config-backup",
+    "params": [],
+    "body": true,
+    "desc": "Schedules the configuration backup on the ISE node as per the input parameters.",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "backup_schedule_update",
+    "method": "PUT",
+    "path": "/api/v1/backup-restore/config/schedule-config-backup",
+    "params": [],
+    "body": true,
+    "desc": "Update scheduled configuration backup",
+    "category": "Backup & Restore"
+  },
+  {
+    "tool": "cert_system_list",
+    "method": "GET",
+    "path": "/api/v1/certs/system-certificate/{hostName}",
+    "params": [
+      "hostName"
+    ],
+    "body": false,
+    "desc": "Get all system certificates of a particular node",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_system_get",
+    "method": "GET",
+    "path": "/api/v1/certs/system-certificate/{hostName}/{id}",
+    "params": [
+      "hostName",
+      "id"
+    ],
+    "body": false,
+    "desc": "Get system certificate of a particular node by ID",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_system_delete",
+    "method": "DELETE",
+    "path": "/api/v1/certs/system-certificate/{hostName}/{id}",
+    "params": [
+      "hostName",
+      "id"
+    ],
+    "body": true,
+    "desc": "Delete System Certificate by ID and hostname",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_system_import",
+    "method": "POST",
+    "path": "/api/v1/certs/system-certificate/import",
+    "params": [],
+    "body": true,
+    "desc": "Import system certificate in Cisco ISE",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_system_export",
+    "method": "POST",
+    "path": "/api/v1/certs/system-certificate/export",
+    "params": [],
+    "body": true,
+    "desc": "Export a system certificate with a given a certificate ID",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_trusted_list",
+    "method": "GET",
+    "path": "/api/v1/certs/trusted-certificate",
+    "params": [],
+    "body": false,
+    "desc": "Get list of all trusted certificates",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_trusted_get",
+    "method": "GET",
+    "path": "/api/v1/certs/trusted-certificate/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Get Trust Certificate By ID",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_trusted_update",
+    "method": "PUT",
+    "path": "/api/v1/certs/trusted-certificate/{id}",
+    "params": [
+      "id"
+    ],
+    "body": true,
+    "desc": "Update the trust certificate already present in the Cisco ISE trust store",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_trusted_delete",
+    "method": "DELETE",
+    "path": "/api/v1/certs/trusted-certificate/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Delete a trusted certificate based on a given ID",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_trusted_import",
+    "method": "POST",
+    "path": "/api/v1/certs/trusted-certificate/import",
+    "params": [],
+    "body": true,
+    "desc": "Add root certificate to the Cisco ISE truststore",
+    "category": "Certificates"
+  },
+  {
+    "tool": "cert_csr_list",
+    "method": "GET",
+    "path": "/api/v1/certs/certificate-signing-request",
+    "params": [],
+    "body": false,
+    "desc": "Get all Certificate Signing Requests from PAN",
+    "category": "Certificates"
+  },
+  {
+    "tool": "radius_policy_set_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set",
+    "params": [],
+    "body": false,
+    "desc": "Network Access - List of policy sets.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_policy_set_get",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Get policy set attributes.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_policy_set_create",
+    "method": "POST",
+    "path": "/api/v1/policy/network-access/policy-set",
+    "params": [],
+    "body": true,
+    "desc": "Network Access - Create a new policy set.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_policy_set_update",
+    "method": "PUT",
+    "path": "/api/v1/policy/network-access/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": true,
+    "desc": "Network Access - Update a policy set.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_policy_set_delete",
+    "method": "DELETE",
+    "path": "/api/v1/policy/network-access/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Delete a policy set.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_authentication_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set/{id}/authentication",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Get authentication rules.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_authentication_create",
+    "method": "POST",
+    "path": "/api/v1/policy/network-access/policy-set/{id}/authentication",
+    "params": [
+      "id"
+    ],
+    "body": true,
+    "desc": "Network Access - Create authentication rule.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_authorization_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set/{id}/authorization",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Get authorization rules.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_authorization_create",
+    "method": "POST",
+    "path": "/api/v1/policy/network-access/policy-set/{id}/authorization",
+    "params": [
+      "id"
+    ],
+    "body": true,
+    "desc": "Network Access - Create authorization rule.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_exception_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set/{id}/exception",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Get local exception rules.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_global_exception_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/policy-set/global-exception",
+    "params": [],
+    "body": false,
+    "desc": "Network Access - Get global execption rules.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_condition_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/condition",
+    "params": [],
+    "body": false,
+    "desc": "Network Access - Returns all library conditions",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_condition_get",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/condition/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Network Access - Returns a library condition.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_condition_create",
+    "method": "POST",
+    "path": "/api/v1/policy/network-access/condition",
+    "params": [],
+    "body": true,
+    "desc": "Network Access - Creates a library condition.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_dictionary_list",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/dictionaries",
+    "params": [],
+    "body": false,
+    "desc": "Network Access - Returns a list of Dictionaries.",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "radius_dictionary_get",
+    "method": "GET",
+    "path": "/api/v1/policy/network-access/dictionaries/{name}",
+    "params": [
+      "name"
+    ],
+    "body": false,
+    "desc": "GET a dictionary by name",
+    "category": "Policy: Network Access"
+  },
+  {
+    "tool": "tacacs_policy_set_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/policy-set",
+    "params": [],
+    "body": false,
+    "desc": "Device Admin - List of policy sets.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_policy_set_get",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Device Admin - Get policy set attributes.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_policy_set_create",
+    "method": "POST",
+    "path": "/api/v1/policy/device-admin/policy-set",
+    "params": [],
+    "body": true,
+    "desc": "Device Admin - Create a new policy set.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_policy_set_update",
+    "method": "PUT",
+    "path": "/api/v1/policy/device-admin/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": true,
+    "desc": "Device Admin - Update a policy set.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_policy_set_delete",
+    "method": "DELETE",
+    "path": "/api/v1/policy/device-admin/policy-set/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Device Admin - Delete a policy set.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_authentication_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/policy-set/{id}/authentication",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Device Admin - Get authentication rules.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_authorization_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/policy-set/{id}/authorization",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Device Admin - Get authorization rules.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_command_sets_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/command-sets",
+    "params": [],
+    "body": false,
+    "desc": "Device Admin - Return list of command sets.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_condition_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/condition",
+    "params": [],
+    "body": false,
+    "desc": "Device Admin - Returns list of library conditions.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "tacacs_shell_profiles_list",
+    "method": "GET",
+    "path": "/api/v1/policy/device-admin/shell-profiles",
+    "params": [],
+    "body": false,
+    "desc": "Device Admin - Returns list of shell profiles.",
+    "category": "Policy: Device Admin"
+  },
+  {
+    "tool": "deployment_node_list",
+    "method": "GET",
+    "path": "/api/v1/deployment/node",
+    "params": [],
+    "body": false,
+    "desc": "Retrieve the list of all the nodes that are deployed in the cluster.",
+    "category": "Deployment"
+  },
+  {
+    "tool": "deployment_node_get",
+    "method": "GET",
+    "path": "/api/v1/deployment/node/{hostname}",
+    "params": [
+      "hostname"
+    ],
+    "body": false,
+    "desc": "Retrieve details of a deployed node.",
+    "category": "Deployment"
+  },
+  {
+    "tool": "deployment_node_group_list",
+    "method": "GET",
+    "path": "/api/v1/deployment/node-group",
+    "params": [],
+    "body": false,
+    "desc": "Retrieve the list of all the node groups.",
+    "category": "Deployment"
+  },
+  {
+    "tool": "patch_list",
+    "method": "GET",
+    "path": "/api/v1/patch",
+    "params": [],
+    "body": false,
+    "desc": "List installed patches",
+    "category": "Patch"
+  },
+  {
+    "tool": "patch_install",
+    "method": "POST",
+    "path": "/api/v1/patch/install",
+    "params": [],
+    "body": true,
+    "desc": "Trigger patch installation on the Cisco ISE node.",
+    "category": "Patch"
+  },
+  {
+    "tool": "patch_rollback",
+    "method": "POST",
+    "path": "/api/v1/patch/rollback",
+    "params": [],
+    "body": true,
+    "desc": "Removes patch from the Cisco ISE node.",
+    "category": "Patch"
+  },
+  {
+    "tool": "hotpatch_list",
+    "method": "GET",
+    "path": "/api/v1/hotpatch",
+    "params": [],
+    "body": false,
+    "desc": "List installed hot patches",
+    "category": "Patch"
+  },
+  {
+    "tool": "hotpatch_install",
+    "method": "POST",
+    "path": "/api/v1/hotpatch/install",
+    "params": [],
+    "body": true,
+    "desc": "Trigger hotpatch installation on Cisco ISE node.",
+    "category": "Patch"
+  },
+  {
+    "tool": "hotpatch_rollback",
+    "method": "POST",
+    "path": "/api/v1/hotpatch/rollback",
+    "params": [],
+    "body": true,
+    "desc": "Rollback hotpatch from the Cisco ISE node.",
+    "category": "Patch"
+  },
+  {
+    "tool": "license_smart_state_get",
+    "method": "GET",
+    "path": "/api/v1/license/system/smart-state",
+    "params": [],
+    "body": false,
+    "desc": "License - smart license information",
+    "category": "Licensing"
+  },
+  {
+    "tool": "license_smart_state_set",
+    "method": "POST",
+    "path": "/api/v1/license/system/smart-state",
+    "params": [],
+    "body": true,
+    "desc": "License - smart state information",
+    "category": "Licensing"
+  },
+  {
+    "tool": "license_tier_state_get",
+    "method": "GET",
+    "path": "/api/v1/license/system/tier-state",
+    "params": [],
+    "body": false,
+    "desc": "Get tier state information",
+    "category": "Licensing"
+  },
+  {
+    "tool": "license_register",
+    "method": "POST",
+    "path": "/api/v1/license/system/register",
+    "params": [],
+    "body": true,
+    "desc": "License - registration information",
+    "category": "Licensing"
+  },
+  {
+    "tool": "license_eval_get",
+    "method": "GET",
+    "path": "/api/v1/license/system/eval-license",
+    "params": [],
+    "body": false,
+    "desc": "License - registration information",
+    "category": "Licensing"
+  },
+  {
+    "tool": "license_connection_type_get",
+    "method": "GET",
+    "path": "/api/v1/license/system/connection-type",
+    "params": [],
+    "body": false,
+    "desc": "License - Connection Type",
+    "category": "Licensing"
+  },
+  {
+    "tool": "task_get",
+    "method": "GET",
+    "path": "/api/v1/task/{id}",
+    "params": [
+      "id"
+    ],
+    "body": false,
+    "desc": "Monitor task status",
+    "category": "Task"
+  }
+]

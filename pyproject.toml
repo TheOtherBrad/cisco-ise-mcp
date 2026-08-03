@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cisco-ise-mcp"
+version = "1.0.0"
+description = "MCP server for Cisco ISE — multi-deployment ERS, Open API, Monitoring, and Data Connect"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "mcp>=1.28,<3",
+    "httpx>=0.27.0",
+    "python-dotenv>=1.0.0",
+    "oracledb>=2.0.0",
+    "keyring>=24.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+]
+# Pin the MCP SDK major per venv. Only one ``mcp`` can be installed at a time,
+# so "separate installs" means separate venvs built from this one repo:
+#   pip install -e '.[v1]'   (or  uv sync --extra v1)
+#   pip install -e '.[v2]'   (or  uv sync --extra v2)
+v1 = ["mcp>=1.28,<2"]
+v2 = ["mcp>=2,<3"]
+
+[project.scripts]
+cisco-ise-mcp = "cisco_ise_mcp.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"cisco_ise_mcp.catalog" = ["*.json"]
+
+# The v1/v2 extras pin conflicting mcp majors; only one is ever installed per
+# venv. Declare them mutually exclusive so uv doesn't try to co-resolve them.
+[tool.uv]
+conflicts = [[{ extra = "v1" }, { extra = "v2" }]]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

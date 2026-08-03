@@ -1,0 +1,35 @@
+# Secrets & local config — NEVER commit these
+.env
+.env.*
+!.env.example
+deployments.json
+audit.log
+*.pem
+*.sso
+wallet/
+certs/
+
+# Downloaded API specs (reproducible from iseapi_yaml/links.yaml via
+# `uv run python scripts/refresh_catalog.py`; the built catalogs under
+# src/cisco_ise_mcp/catalog/*.json are the committed artifact). Keep links.yaml.
+iseapi_yaml/ers/*.yaml
+iseapi_yaml/openapi/*.yaml
+iseapi_yaml/monitoring/*.yaml
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+*.tmp
+.deployments.*.tmp
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+.claude/

@@ -1,0 +1,1353 @@
+{
+  "acibindings": {
+    "key": "acibindings",
+    "path": "acibindings",
+    "label": "Acibindings",
+    "tag": "acibindings",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "getall"
+    ]
+  },
+  "acisettings": {
+    "key": "acisettings",
+    "path": "acisettings",
+    "label": "Acisettings",
+    "tag": "acisettings",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": false,
+      "update": true,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "testACIConnectivity"
+    ]
+  },
+  "activedirectory": {
+    "key": "activedirectory",
+    "path": "activedirectory",
+    "label": "Active Directory",
+    "tag": "activedirectory",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": false,
+      "delete": true,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": [
+      "{id}/addGroups",
+      "{id}/getDomainUsers",
+      "{id}/getGroupsByDomain",
+      "{id}/getTrustedDomains",
+      "{id}/getUserGroups",
+      "{id}/isUserMemberOf",
+      "{id}/join",
+      "{id}/joinAllNodes",
+      "{id}/leave",
+      "{id}/leaveAllNodes",
+      "{id}/passiveIdSettings"
+    ]
+  },
+  "adminuser": {
+    "key": "adminuser",
+    "path": "adminuser",
+    "label": "Admin Users",
+    "tag": "adminuser",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": [
+      "setownpassword",
+      "{id}/remove"
+    ]
+  },
+  "adresourcereservation": {
+    "key": "adresourcereservation",
+    "path": "adresourcereservation",
+    "label": "Adresourcereservation",
+    "tag": "adresourcereservation",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": true,
+      "delete": false,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "allowedprotocols": {
+    "key": "allowedprotocols",
+    "path": "allowedprotocols",
+    "label": "Allowed Protocols",
+    "tag": "allowedprotocols",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "ancendpoint": {
+    "key": "ancendpoint",
+    "path": "ancendpoint",
+    "label": "ANC Endpoints",
+    "tag": "ancendpoint",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "apply",
+      "clear"
+    ]
+  },
+  "ancpolicy": {
+    "key": "ancpolicy",
+    "path": "ancpolicy",
+    "label": "ANC Policies",
+    "tag": "ancpolicy",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "authorizationprofile": {
+    "key": "authorizationprofile",
+    "path": "authorizationprofile",
+    "label": "Authorization Profiles",
+    "tag": "authorizationprofile",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "byodportal": {
+    "key": "byodportal",
+    "path": "byodportal",
+    "label": "BYOD Portals",
+    "tag": "byodportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "certificateprofile": {
+    "key": "certificateprofile",
+    "path": "certificateprofile",
+    "label": "Certificateprofile",
+    "tag": "certificateprofile",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "certificatetemplate": {
+    "key": "certificatetemplate",
+    "path": "certificatetemplate",
+    "label": "Certificatetemplate",
+    "tag": "certificatetemplate",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "ctsapi": {
+    "key": "ctsapi",
+    "path": "ctsapi",
+    "label": "Ctsapi",
+    "tag": "reportconfig",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "v2/ctsenvdata",
+      "v2/ctsmatrix",
+      "v2/reportconfig",
+      "v2/sgacls",
+      "v3/ctsenvdata",
+      "v3/ctsmatrix",
+      "v3/reportconfig",
+      "v3/sgacls"
+    ]
+  },
+  "ctsenvdata": {
+    "key": "ctsenvdata",
+    "path": "ctsenvdata",
+    "label": "Ctsenvdata",
+    "tag": "ctsenvdata",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "ctsmatrix": {
+    "key": "ctsmatrix",
+    "path": "ctsmatrix",
+    "label": "Ctsmatrix",
+    "tag": "ctsmatrix",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "deploymentinfo": {
+    "key": "deploymentinfo",
+    "path": "deploymentinfo",
+    "label": "Deploymentinfo",
+    "tag": "deploymentinfo",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "getAllInfo"
+    ]
+  },
+  "downloadableacl": {
+    "key": "downloadableacl",
+    "path": "downloadableacl",
+    "label": "Downloadable ACLs (dACLs)",
+    "tag": "downloadableacl",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "egressmatrixcell": {
+    "key": "egressmatrixcell",
+    "path": "egressmatrixcell",
+    "label": "Egressmatrixcell",
+    "tag": "egressmatrixcell",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "clearallmatrixcells",
+      "clonecell/{id}/srcSgt/{srcSgtId}/dstSgt/{dstSgtId}",
+      "status/{status}"
+    ]
+  },
+  "endpoint": {
+    "key": "endpoint",
+    "path": "endpoint",
+    "label": "Endpoints",
+    "tag": "endpoint",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": [
+      "getrejectedendpoints",
+      "register",
+      "{id}/deregister",
+      "{id}/releaserejectedendpoint"
+    ]
+  },
+  "endpointcert": {
+    "key": "endpointcert",
+    "path": "endpointcert",
+    "label": "Endpointcert",
+    "tag": "endpointcert",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "certRequest"
+    ]
+  },
+  "endpointgroup": {
+    "key": "endpointgroup",
+    "path": "endpointgroup",
+    "label": "Endpoint Identity Groups",
+    "tag": "endpointgroup",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "externalradiusserver": {
+    "key": "externalradiusserver",
+    "path": "externalradiusserver",
+    "label": "External RADIUS Servers",
+    "tag": "externalradiusserver",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "filterpolicy": {
+    "key": "filterpolicy",
+    "path": "filterpolicy",
+    "label": "Filterpolicy",
+    "tag": "filterpolicy",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "guestlocation": {
+    "key": "guestlocation",
+    "path": "guestlocation",
+    "label": "Guestlocation",
+    "tag": "guestlocation",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "guestsmtpnotificationsettings": {
+    "key": "guestsmtpnotificationsettings",
+    "path": "guestsmtpnotificationsettings",
+    "label": "Guestsmtpnotificationsettings",
+    "tag": "guestsmtpnotificationsettings",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": false,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "guestssid": {
+    "key": "guestssid",
+    "path": "guestssid",
+    "label": "Guestssid",
+    "tag": "guestssid",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "guesttype": {
+    "key": "guesttype",
+    "path": "guesttype",
+    "label": "Guest Types",
+    "tag": "guesttype",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "email/{id}",
+      "sms/{id}"
+    ]
+  },
+  "guestuser": {
+    "key": "guestuser",
+    "path": "guestuser",
+    "label": "Guest Users",
+    "tag": "guestuser",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": [
+      "approve/{id}",
+      "changeSponsorPassword/{portalId}",
+      "deny/{id}",
+      "email/{id}/portalId/{portalId}",
+      "reinstate/name/{name}",
+      "reinstate/{id}",
+      "resetpassword/{id}",
+      "sms/{id}/portalId/{portalId}",
+      "suspend/name/{name}",
+      "suspend/{id}"
+    ]
+  },
+  "hotspotportal": {
+    "key": "hotspotportal",
+    "path": "hotspotportal",
+    "label": "Hotspotportal",
+    "tag": "hotspotportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "identitygroup": {
+    "key": "identitygroup",
+    "path": "identitygroup",
+    "label": "Identity Groups",
+    "tag": "identitygroup",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "idstoresequence": {
+    "key": "idstoresequence",
+    "path": "idstoresequence",
+    "label": "Identity Store Sequences",
+    "tag": "idstoresequence",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "internaluser": {
+    "key": "internaluser",
+    "path": "internaluser",
+    "label": "Internal Users",
+    "tag": "internaluser",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "ldap": {
+    "key": "ldap",
+    "path": "ldap",
+    "label": "LDAP Identity Sources",
+    "tag": "ldap",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": [
+      "hosts",
+      "issuercacertificates",
+      "rootcacertificates",
+      "{id}/testbindprimary",
+      "{id}/testbindsecondary"
+    ]
+  },
+  "mydeviceportal": {
+    "key": "mydeviceportal",
+    "path": "mydeviceportal",
+    "label": "Mydeviceportal",
+    "tag": "mydeviceportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "networkdevice": {
+    "key": "networkdevice",
+    "path": "networkdevice",
+    "label": "Network Devices (NADs)",
+    "tag": "networkdevice",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "networkdevicegroup": {
+    "key": "networkdevicegroup",
+    "path": "networkdevicegroup",
+    "label": "Network Device Groups",
+    "tag": "networkdevicegroup",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "node": {
+    "key": "node",
+    "path": "node",
+    "label": "ISE Nodes",
+    "tag": "node",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "nspprofile": {
+    "key": "nspprofile",
+    "path": "nspprofile",
+    "label": "Nspprofile",
+    "tag": "nspprofile",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "portal": {
+    "key": "portal",
+    "path": "portal",
+    "label": "Portals",
+    "tag": "portal",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "portalglobalsetting": {
+    "key": "portalglobalsetting",
+    "path": "portalglobalsetting",
+    "label": "Portalglobalsetting",
+    "tag": "portalglobalsetting",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": true,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "portaltheme": {
+    "key": "portaltheme",
+    "path": "portaltheme",
+    "label": "Portaltheme",
+    "tag": "portaltheme",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "profilerprofile": {
+    "key": "profilerprofile",
+    "path": "profilerprofile",
+    "label": "Profiler Profiles",
+    "tag": "profilerprofile",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "pxgridnode": {
+    "key": "pxgridnode",
+    "path": "pxgridnode",
+    "label": "Pxgridnode",
+    "tag": "pxgridnode",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": [
+      "name/{name}/approve"
+    ]
+  },
+  "pxgridsettings": {
+    "key": "pxgridsettings",
+    "path": "pxgridsettings",
+    "label": "Pxgridsettings",
+    "tag": "pxgridsettings",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "autoapprove"
+    ]
+  },
+  "radiusserversequence": {
+    "key": "radiusserversequence",
+    "path": "radiusserversequence",
+    "label": "RADIUS Server Sequences",
+    "tag": "radiusserversequence",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "reportconfig": {
+    "key": "reportconfig",
+    "path": "reportconfig",
+    "label": "Reportconfig",
+    "tag": "reportconfig",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "restidstore": {
+    "key": "restidstore",
+    "path": "restidstore",
+    "label": "REST ID Stores",
+    "tag": "restidstore",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "restidstoreattribute": {
+    "key": "restidstoreattribute",
+    "path": "restidstoreattribute",
+    "label": "Restidstoreattribute",
+    "tag": "restidstoreattribute",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "fetchAttributes"
+    ]
+  },
+  "restidstoredeviceattribute": {
+    "key": "restidstoredeviceattribute",
+    "path": "restidstoredeviceattribute",
+    "label": "Restidstoredeviceattribute",
+    "tag": "restidstoredeviceattribute",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "fetchDeviceAttributes"
+    ]
+  },
+  "restidstoregroup": {
+    "key": "restidstoregroup",
+    "path": "restidstoregroup",
+    "label": "Restidstoregroup",
+    "tag": "restidstoregroup",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "fetchGroups"
+    ]
+  },
+  "restidstorepredefinedregex": {
+    "key": "restidstorepredefinedregex",
+    "path": "restidstorepredefinedregex",
+    "label": "Restidstorepredefinedregex",
+    "tag": "restidstorepredefinedregex",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "fetchSanPredefinedregexs",
+      "fetchSnfPredefinedregexs"
+    ]
+  },
+  "restidstoresettings": {
+    "key": "restidstoresettings",
+    "path": "restidstoresettings",
+    "label": "Restidstoresettings",
+    "tag": "restidstoresettings",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": false,
+      "update": true,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "selfregportal": {
+    "key": "selfregportal",
+    "path": "selfregportal",
+    "label": "Selfregportal",
+    "tag": "selfregportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "service": {
+    "key": "service",
+    "path": "service",
+    "label": "Service",
+    "tag": "service",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sessionservicenode": {
+    "key": "sessionservicenode",
+    "path": "sessionservicenode",
+    "label": "Sessionservicenode",
+    "tag": "sessionservicenode",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "sgacl": {
+    "key": "sgacl",
+    "path": "sgacl",
+    "label": "Security Group ACLs (SGACLs)",
+    "tag": "sgacl",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sgacls": {
+    "key": "sgacls",
+    "path": "sgacls",
+    "label": "Sgacls",
+    "tag": "sgacls",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sgmapping": {
+    "key": "sgmapping",
+    "path": "sgmapping",
+    "label": "SGT Mappings",
+    "tag": "sgmapping",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "deploy/status",
+      "deployall",
+      "{id}/deploy"
+    ]
+  },
+  "sgmappinggroup": {
+    "key": "sgmappinggroup",
+    "path": "sgmappinggroup",
+    "label": "SGT Mapping Groups",
+    "tag": "sgmappinggroup",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "deploy/status",
+      "deployall",
+      "{id}/deploy"
+    ]
+  },
+  "sgt": {
+    "key": "sgt",
+    "path": "sgt",
+    "label": "Security Group Tags (SGTs)",
+    "tag": "sgt",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sgtvnvlan": {
+    "key": "sgtvnvlan",
+    "path": "sgtvnvlan",
+    "label": "Sgtvnvlan",
+    "tag": "sgtvnvlan",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "smsprovider": {
+    "key": "smsprovider",
+    "path": "smsprovider",
+    "label": "Smsprovider",
+    "tag": "smsprovider",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sponsoredguestportal": {
+    "key": "sponsoredguestportal",
+    "path": "sponsoredguestportal",
+    "label": "Sponsoredguestportal",
+    "tag": "sponsoredguestportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sponsorgroup": {
+    "key": "sponsorgroup",
+    "path": "sponsorgroup",
+    "label": "Sponsorgroup",
+    "tag": "sponsorgroup",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sponsorgroupmember": {
+    "key": "sponsorgroupmember",
+    "path": "sponsorgroupmember",
+    "label": "Sponsorgroupmember",
+    "tag": "sponsorgroupmember",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sponsorportal": {
+    "key": "sponsorportal",
+    "path": "sponsorportal",
+    "label": "Sponsorportal",
+    "tag": "sponsorportal",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "supportbundle": {
+    "key": "supportbundle",
+    "path": "supportbundle",
+    "label": "Supportbundle",
+    "tag": "supportbundle",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "supportbundledownload": {
+    "key": "supportbundledownload",
+    "path": "supportbundledownload",
+    "label": "Supportbundledownload",
+    "tag": "supportbundledownload",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "supportbundlestatus": {
+    "key": "supportbundlestatus",
+    "path": "supportbundlestatus",
+    "label": "Supportbundlestatus",
+    "tag": "supportbundlestatus",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sxpconnections": {
+    "key": "sxpconnections",
+    "path": "sxpconnections",
+    "label": "SXP Connections",
+    "tag": "sxpconnections",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sxplocalbindings": {
+    "key": "sxplocalbindings",
+    "path": "sxplocalbindings",
+    "label": "SXP Local Bindings",
+    "tag": "sxplocalbindings",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "sxpvpns": {
+    "key": "sxpvpns",
+    "path": "sxpvpns",
+    "label": "Sxpvpns",
+    "tag": "sxpvpns",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": false,
+      "delete": true,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "systemcertificate": {
+    "key": "systemcertificate",
+    "path": "systemcertificate",
+    "label": "System Certificates",
+    "tag": "systemcertificate",
+    "ops": {
+      "list": false,
+      "create": true,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "tacacscommandsets": {
+    "key": "tacacscommandsets",
+    "path": "tacacscommandsets",
+    "label": "TACACS+ Command Sets",
+    "tag": "tacacscommandsets",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "tacacsexternalservers": {
+    "key": "tacacsexternalservers",
+    "path": "tacacsexternalservers",
+    "label": "TACACS+ External Servers",
+    "tag": "tacacsexternalservers",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "tacacsprofile": {
+    "key": "tacacsprofile",
+    "path": "tacacsprofile",
+    "label": "TACACS+ Profiles",
+    "tag": "tacacsprofile",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "tacacsserversequence": {
+    "key": "tacacsserversequence",
+    "path": "tacacsserversequence",
+    "label": "TACACS+ Server Sequences",
+    "tag": "tacacsserversequence",
+    "ops": {
+      "list": true,
+      "create": true,
+      "get": true,
+      "update": true,
+      "delete": true,
+      "patch": true,
+      "get_by_name": true
+    },
+    "actions": []
+  },
+  "telemetryinfo": {
+    "key": "telemetryinfo",
+    "path": "telemetryinfo",
+    "label": "Telemetryinfo",
+    "tag": "telemetryinfo",
+    "ops": {
+      "list": true,
+      "create": false,
+      "get": true,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": []
+  },
+  "threat": {
+    "key": "threat",
+    "path": "threat",
+    "label": "Threat",
+    "tag": "threat",
+    "ops": {
+      "list": false,
+      "create": false,
+      "get": false,
+      "update": false,
+      "delete": false,
+      "patch": false,
+      "get_by_name": false
+    },
+    "actions": [
+      "clearThreatsAndVulneribilities"
+    ]
+  }
+}
