@@ -117,6 +117,68 @@ def get_meta() -> dict:
         return {}
 
 
+# ---------------------------------------------------------------------------
+# Fact vs dimension classification (curated — deliberately NOT in the JSON)
+#
+# ``scripts/refresh_catalog.py`` regenerates dataconnect_views.json by scraping
+# Cisco DevNet, which has no fact/dimension notion — a curated field added to the
+# JSON would be silently wiped on the next refresh. Keeping the list here means
+# it survives refreshes; ``unknown_fact_views()`` guards it against rot.
+#
+# "Fact" = a large, high-volume event/time-series view (millions to hundreds of
+# millions of rows) whose unbounded scan or join is what threatens the ISE
+# Monitoring node. Everything else is a dimension: small config/lookup views
+# (``network_devices`` 6 cols, ``security_groups`` 5, ``failure_code_cause`` 2)
+# that are cheap to join and are exempt from the raw-SQL cost guards.
+#
+# NOTE: ``time_col`` is NOT a usable classifier — ``endpoint_identity_groups``,
+# ``network_device_groups``, ``policy_sets`` and ``user_identity_groups`` all
+# carry CREATE_TIME but are 6-7 column config tables.
+# ---------------------------------------------------------------------------
+_FACT_VIEWS: frozenset = frozenset({
+    "radius_authentications", "radius_authentications_week", "radius_authentication_summary",
+    "radius_accounting", "radius_accounting_week", "radius_errors_view",
+    "tacacs_authentication", "tacacs_authentication_last_two_days",
+    "tacacs_authentication_summary", "tacacs_authorization",
+    "tacacs_authorization_last_two_days", "tacacs_accounting",
+    "tacacs_accounting_last_two_days", "tacacs_command_accounting",
+    "posture_assessment_by_condition", "posture_assessment_by_endpoint",
+    "endpoints_data", "change_configuration_audit",
+    "guest_accounting", "guest_devicelogin_audit", "primary_guest",
+    "aup_acceptance_status", "profiled_endpoints_summary",
+    "coa_events", "threat_events",
+    "administrator_logins", "sponsor_login_and_audit",
+    "system_diagnostics_view", "aaa_diagnostics_view",
+    "key_performance_metrics", "system_summary",
+    "openapi_operations", "misconfigured_nas_view", "misconfigured_supplicants_view",
+    "user_password_changes", "vulnerability_assessment_failures",
+    "registered_endpoints", "adaptive_network_control", "endpoint_purge_view",
+})
+
+
+@lru_cache(maxsize=1)
+def get_fact_view_names() -> frozenset:
+    """UPPER-CASED database view names classified as high-volume fact views.
+
+    Returned in the same form ``validate_raw_select`` extracts FROM/JOIN targets,
+    so membership can be tested directly.
+    """
+    views = get_dc_views(include_internal=True)
+    names = set()
+    for key in _FACT_VIEWS:
+        info = views.get(key)
+        # Fall back to the key when the catalog lacks the entry, so an out-of-date
+        # cache still classifies the view as a fact (fail safe, not fail open).
+        names.add(str(info["view"]).upper() if info else key.upper())
+    return frozenset(names)
+
+
+def unknown_fact_views() -> list[str]:
+    """Curated fact-view keys that no longer exist in the catalog (rot guard)."""
+    views = get_dc_views(include_internal=True)
+    return sorted(k for k in _FACT_VIEWS if k not in views)
+
+
 __all__ = [
     "get_ers_resources",
     "get_dc_views",
@@ -125,5 +187,7 @@ __all__ = [
     "get_monitoring_endpoints",
     "get_monitoring_index",
     "get_meta",
+    "get_fact_view_names",
+    "unknown_fact_views",
     "missing_catalogs",
 ]
