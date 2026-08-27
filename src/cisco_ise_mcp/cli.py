@@ -188,6 +188,43 @@ def cmd_validate(_args) -> int:
     return 1 if any_bad else 0
 
 
+# Resource-limit flags shared by `add` and `update`. Values are hard-capped by the
+# CISCO_ISE_MCP_* environment ceilings, so these can only tighten, never raise.
+_LIMIT_ARGS = [
+    ("--dc-max-concurrent", "dc_max_concurrent",
+     "Max simultaneous Data Connect queries (default 5)."),
+    ("--dc-query-timeout-s", "dc_query_timeout_s",
+     "Seconds a Data Connect query may run before being cancelled on the MnT node (default 60)."),
+    ("--dc-max-per-minute", "dc_max_per_minute",
+     "Sustained Data Connect queries per minute (default 30)."),
+    ("--dc-default-days-back", "dc_default_days_back",
+     "Window applied when a view query omits days_back (default 7)."),
+    ("--dc-max-days-back", "dc_max_days_back",
+     "Largest days_back allowed; larger values are reduced to it (default 90)."),
+    ("--dc-default-row-limit", "dc_default_row_limit",
+     "Row bound injected into ise_dc_query when it has none (default 500)."),
+    ("--dc-max-fact-views", "dc_max_fact_views",
+     "Large event views joinable in one raw query (default 3)."),
+    ("--ers-max-concurrent", "ers_max_concurrent",
+     "Max simultaneous ERS calls (default 10, of Cisco's ~100)."),
+    ("--openapi-max-concurrent", "openapi_max_concurrent",
+     "Max simultaneous Open API calls (default 15, of Cisco's ~150)."),
+    ("--mnt-max-concurrent", "monitoring_max_concurrent",
+     "Max simultaneous Monitoring (MnT) calls (default 5)."),
+]
+
+
+def _add_limit_args(parser) -> None:
+    for flag, dest, help_text in _LIMIT_ARGS:
+        parser.add_argument(flag, dest=dest, type=int, default=None, metavar="N", help=help_text)
+
+
+def _limit_kwargs(args) -> dict:
+    """Only the limit flags the user actually passed."""
+    return {dest: getattr(args, dest) for _f, dest, _h in _LIMIT_ARGS
+            if getattr(args, dest, None) is not None}
+
+
 def cmd_add(args) -> int:
     name, host = args.name, args.host
     interactive = sys.stdin.isatty()
@@ -252,6 +289,7 @@ def cmd_add(args) -> int:
             dataconnect_os_trust=dc_os_trust,
             dataconnect_oracle_client_lib=args.dc_oracle_lib,
             make_default=args.default or None,
+            **_limit_kwargs(args),
         )
     except config.ConfigError as exc:
         return _err(str(exc))
@@ -284,9 +322,11 @@ def cmd_update(args) -> int:
         ("dc_oracle_lib", "dataconnect_oracle_client_lib"),
     ]
     fields = {kw: getattr(args, attr) for attr, kw in mapping if getattr(args, attr, None) is not None}
+    fields.update(_limit_kwargs(args))
     if not fields:
         return _err("Nothing to update. Pass at least one field, "
-                    "e.g. --host 10.2.1.5, --enable-dataconnect, or --dc-cert /path/to.pem.")
+                    "e.g. --host 10.2.1.5, --enable-dataconnect, --dc-cert /path/to.pem, "
+                    "or --dc-max-concurrent 3.")
     try:
         res = config.update_deployment(args.deployment, reslug=args.reslug, **fields)
     except config.ReslugRequired as exc:
@@ -408,6 +448,7 @@ def build_parser() -> argparse.ArgumentParser:
                         "PEM (no --dc-cert needed).")
     p.add_argument("--dc-oracle-lib", default="", help="Oracle Instant Client dir (thick mode).")
     p.add_argument("--default", action="store_true", help="Make this the default deployment.")
+    _add_limit_args(p)
     p.set_defaults(func=cmd_add)
 
     up = sub.add_parser(
@@ -457,6 +498,7 @@ def build_parser() -> argparse.ArgumentParser:
     g_ot.add_argument("--dc-no-os-trust", dest="dataconnect_os_trust", action="store_false", default=None,
                       help="Disable OS-trust for Data Connect (use a pinned cert/wallet instead).")
     up.add_argument("--dc-oracle-lib", dest="dc_oracle_lib", help="Oracle Instant Client dir (thick mode).")
+    _add_limit_args(up)
     up.add_argument("--reslug", action="store_true",
                     help="Authorize changing the slug (identity) when --name produces a different slug; "
                          "migrates stored credentials. Required for such renames.")
