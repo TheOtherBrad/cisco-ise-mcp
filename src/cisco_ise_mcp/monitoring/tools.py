@@ -25,7 +25,8 @@ from mcp.types import Tool
 
 from cisco_ise_mcp import _mcpcompat as compat
 from cisco_ise_mcp import catalog
-from cisco_ise_mcp.config import get_config, with_deployment
+from cisco_ise_mcp.config import get_config, surface_limits, with_deployment
+from cisco_ise_mcp.limits import get_limiter
 from cisco_ise_mcp.monitoring.client import ISEMonitoringClient
 
 _PLACEHOLDER = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
@@ -75,6 +76,7 @@ async def handle_monitoring_tool(name: str, arguments: dict) -> compat.ToolResul
     (ERS/Open API) credentials and the admin gateway port; the ``monitoring``
     surface also enforces the per-deployment MAPI enable flag."""
     cfg = get_config(arguments.get("deployment"), surface="monitoring")
+    limiter = get_limiter(cfg["_slug"], "monitoring", surface_limits(cfg, "monitoring"))
     client = ISEMonitoringClient(
         host=cfg["ise_host"],
         port=cfg.get("ise_openapi_port", 443),
@@ -82,9 +84,13 @@ async def handle_monitoring_tool(name: str, arguments: dict) -> compat.ToolResul
         password=cfg["ise_password"],
         verify_ssl=cfg.get("verify_ssl", True),
         ca_cert_path=cfg.get("ca_cert_path", ""),
+        max_connections=limiter.policy.max_concurrent,
     )
     try:
-        result = await _dispatch(client, name, arguments)
+        # MnT queries are the expensive legacy path, so this surface gets the
+        # smallest concurrency budget of the four.
+        async with limiter.slot():
+            result = await _dispatch(client, name, arguments)
         return compat.text_result(result)
     finally:
         await client.close()

@@ -31,9 +31,11 @@ class ISEErSClient:
         port: int = 443,
         verify_ssl: bool = True,
         ca_cert_path: str = "",
+        max_connections: int = 0,
     ):
         self.base_url = f"https://{host}:{port}"
         self.auth = (username, password)
+        self.max_connections = int(max_connections or 0)
         # httpx trusts only the certifi bundle for verify=True and never the OS
         # trust store; admin_tls_verify() lets an operator add a private ISE CA.
         from cisco_ise_mcp.config import admin_tls_verify
@@ -42,6 +44,15 @@ class ISEErSClient:
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None or self._client.is_closed:
+            kwargs: dict = {}
+            if self.max_connections > 0:
+                # Bound the socket pool as well as the caller-side semaphore, so
+                # the client can never exceed the concurrency this surface was
+                # granted out of Cisco's deployment-wide connection budget.
+                kwargs["limits"] = httpx.Limits(
+                    max_connections=self.max_connections,
+                    max_keepalive_connections=self.max_connections,
+                )
             self._client = httpx.AsyncClient(
                 auth=self.auth,
                 verify=self._verify,
@@ -50,6 +61,7 @@ class ISEErSClient:
                     "Accept": "application/json",
                     "Content-Type": "application/json",
                 },
+                **kwargs,
             )
         return self._client
 

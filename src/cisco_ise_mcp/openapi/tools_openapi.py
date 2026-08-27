@@ -28,7 +28,8 @@ from mcp.types import Tool
 
 from cisco_ise_mcp import _mcpcompat as compat
 from cisco_ise_mcp import catalog
-from cisco_ise_mcp.config import get_config, with_deployment
+from cisco_ise_mcp.config import get_config, surface_limits, with_deployment
+from cisco_ise_mcp.limits import get_limiter
 
 _PLACEHOLDER = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 
@@ -37,16 +38,25 @@ class ISEOpenAPIClient:
     """Async HTTP client for the ISE 3.1+ Open API endpoints."""
 
     def __init__(self, host: str, username: str, password: str,
-                 port: int = 443, verify_ssl: bool = True, ca_cert_path: str = ""):
+                 port: int = 443, verify_ssl: bool = True, ca_cert_path: str = "",
+                 max_connections: int = 0):
         self.base_url = f"https://{host}:{port}"
         # httpx verify=True trusts only certifi, not the OS/Keychain store;
         # admin_tls_verify() adds a private ISE CA when ca_cert_path is set.
         from cisco_ise_mcp.config import admin_tls_verify
+        kwargs: dict = {}
+        if max_connections and max_connections > 0:
+            # Bound the socket pool to the concurrency this surface was granted.
+            kwargs["limits"] = httpx.Limits(
+                max_connections=int(max_connections),
+                max_keepalive_connections=int(max_connections),
+            )
         self._client = httpx.AsyncClient(
             auth=(username, password),
             verify=admin_tls_verify(verify_ssl, ca_cert_path),
             timeout=60.0,
             headers={"Accept": "application/json", "Content-Type": "application/json"},
+            **kwargs,
         )
 
     async def close(self):
@@ -125,6 +135,7 @@ def list_openapi_tools() -> list[Tool]:
 async def handle_openapi_tool(name: str, arguments: dict) -> compat.ToolResult:
     """Dispatch an Open API tool call via catalog lookup."""
     cfg = get_config(arguments.get("deployment"), surface="openapi")
+    limiter = get_limiter(cfg["_slug"], "openapi", surface_limits(cfg, "openapi"))
     client = ISEOpenAPIClient(
         host=cfg["ise_host"],
         port=cfg.get("ise_openapi_port", 443),
@@ -132,9 +143,13 @@ async def handle_openapi_tool(name: str, arguments: dict) -> compat.ToolResult:
         password=cfg["ise_password"],
         verify_ssl=cfg.get("verify_ssl", True),
         ca_cert_path=cfg.get("ca_cert_path", ""),
+        max_connections=limiter.policy.max_concurrent,
     )
     try:
-        result = await _dispatch_openapi(client, name, arguments)
+        # Cisco documents ~150 concurrent Open API connections per deployment,
+        # shared with every other client — this server takes a small slice.
+        async with limiter.slot():
+            result = await _dispatch_openapi(client, name, arguments)
         return compat.text_result(result)
     finally:
         await client.close()

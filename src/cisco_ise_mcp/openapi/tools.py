@@ -29,7 +29,8 @@ from mcp.types import Tool
 
 from cisco_ise_mcp import _mcpcompat as compat
 from cisco_ise_mcp import catalog
-from cisco_ise_mcp.config import get_config, with_deployment
+from cisco_ise_mcp.config import get_config, surface_limits, with_deployment
+from cisco_ise_mcp.limits import get_limiter
 from cisco_ise_mcp.openapi.client import ISEErSClient
 
 # Common resources that get typed convenience tools (filtered to those present).
@@ -173,6 +174,7 @@ def _resolve_path(resource_key: str) -> str:
 async def handle_ers_tool(name: str, arguments: dict) -> compat.ToolResult:
     """Dispatch an ERS tool call."""
     cfg = get_config(arguments.get("deployment"), surface="ers")
+    limiter = get_limiter(cfg["_slug"], "ers", surface_limits(cfg, "ers"))
     client = ISEErSClient(
         host=cfg["ise_host"],
         port=cfg.get("ise_ers_port", 443),
@@ -180,9 +182,14 @@ async def handle_ers_tool(name: str, arguments: dict) -> compat.ToolResult:
         password=cfg["ise_password"],
         verify_ssl=cfg.get("verify_ssl", True),
         ca_cert_path=cfg.get("ca_cert_path", ""),
+        max_connections=limiter.policy.max_concurrent,
     )
     try:
-        result = await _dispatch_ers(client, name, arguments)
+        # Cisco documents ~100 concurrent ERS connections per deployment, shared
+        # with pxGrid, the admin GUI and every other integration — so this server
+        # claims only a small slice rather than the whole budget.
+        async with limiter.slot():
+            result = await _dispatch_ers(client, name, arguments)
         return compat.text_result(result)
     finally:
         await client.close()
