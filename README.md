@@ -24,7 +24,7 @@ Tool surfaces are built from the Cisco-published OpenAPI **YAML specs** (ERS, Op
 
 Cisco documents roughly **100 concurrent ERS** and **150 concurrent Open API** connections per deployment — budgets shared with pxGrid, the admin GUI and every other integration — and publishes **no limits at all** for Data Connect. Since the ISE `dataconnect` account is a read-only Oracle user with no DBA rights, server-side database governance is unavailable, so this server enforces its own limits client-side and claims only a small slice of the documented budgets:
 
-- **Data Connect** — 5 concurrent pooled sessions, a 60-second query timeout that cancels the statement *on the Monitoring node*, 30 queries/minute, and a default 7-day window on time-series views (larger requests are reduced to 90 days, not rejected).
+- **Data Connect** — 5 concurrent pooled sessions, a 60-second query timeout that cancels the statement *on the Monitoring node*, 30 queries/minute, and a default 7-day window on time-series views (larger requests are reduced to 90 days).
 - **ERS / Open API / MnT** — 10 / 15 / 5 concurrent calls.
 
 Every value is tunable. Environment variables (`CISCO_ISE_MCP_*`, see `.env.example`) are **hard ceilings**; a per-deployment `limits` block may only tighten them. Call `ise_limits_status` or `cisco-ise-mcp test <slug>` to see what is in force.
