@@ -12,6 +12,7 @@ read **[QUICKSTART.md](QUICKSTART.md)** first, then come back here for detail.
 ## Table of Contents
 
 1. [What this server does](#1-what-this-server-does)
+   - [Upgrade impact (read this after updating)](#upgrade-impact-read-this-after-updating)
 2. [Choosing the right surface (routing)](#2-choosing-the-right-surface-routing)
 3. [Prerequisites](#3-prerequisites)
 4. [Installation (Windows / macOS / Linux)](#4-installation-windows--macos--linux)
@@ -44,7 +45,33 @@ covers four ISE API surfaces:
 Every tool also accepts an optional **`deployment`** argument so the same
 toolset can act on any of your configured ISE nodes. Target release: **Cisco ISE 3.4**.
 
+### Upgrade impact (read this after updating)
+
+Upgrading an existing installation requires **no configuration changes**. A registry
+written by an earlier version has no `limits` block; it loads unchanged and receives the
+documented defaults, and no registry version bump or migration is involved.
+
+Four behaviours *do* change, because this release adds resource limits that protect the
+ISE Monitoring node (see [Resource limits](#resource-limits-data-connect) in section 8):
+
+| Change | What you will notice |
+| --- | --- |
+| **`ise_dc_query` cost guards** — **BREAKING** | A raw `SELECT` with no row limit now has one added automatically (500 rows, or 5000 when aggregating) instead of failing. But a query is **rejected** if it references a large event view without a time predicate, has a `JOIN` with no `ON` condition, or joins more than three large event views. `SELECT username, nas_ip_address FROM radius_authentications WHERE username='bob'` worked before and is now refused — add `AND "TIMESTAMP" >= SYSTIMESTAMP - NUMTODSINTERVAL(7,'DAY')`. Small lookup views (`network_devices`, `security_groups`, `failure_code_cause`, ...) are exempt and still join freely. |
+| **7-day default window** | A view query that omits `days_back` used to return *all* history; it now returns the last 7 days. There is no error — just a narrower result. Pass `days_back` explicitly to widen it. |
+| **90-day maximum** | `days_back` above 90 is **reduced to 90, not rejected** — a request for 120 days returns 90 days of data and is logged at WARNING. |
+| **Concurrency and rate caps** | More than 5 simultaneous Data Connect queries (or 10 ERS / 15 Open API / 5 MnT calls) per deployment are refused with guidance after a short wait. A single query is also cancelled after 60 seconds. |
+
+Why enforce the breaking change immediately rather than warn first: an unbounded ad-hoc
+query against the monitoring database is the specific risk this release exists to close,
+and a warn-only period would leave the Monitoring node exposed for another release.
+
+Run `ise_limits_status` (or `cisco-ise-mcp test <slug>`) after upgrading to see the
+effective limits. Full details are in [docs/UPDATES.md](UPDATES.md).
+
 ## 2. Choosing the right surface (routing)
+
+> **Note.** Data Connect queries are rate-limited and time-bounded by default to protect
+> the ISE Monitoring node — see [Resource limits](#resource-limits-data-connect) in section 8.
 
 The rule the agent follows (and that you can ask it about with the `ise_route`
 and `ise_capabilities` tools): surfaces are ranked by **precedence** — when more
@@ -618,6 +645,51 @@ uv run cisco-ise-mcp set-credential radius-only --dataconnect
 Verify it with `uv run cisco-ise-mcp test radius-only` (it runs a read-only
 `SELECT 1` against Data Connect when everything is configured).
 
+### Resource limits (Data Connect)
+
+Cisco publishes **no** limits for Data Connect, and the ISE `dataconnect` account is a
+read-only Oracle user with no rights to configure database-side governance. This server
+therefore bounds Data Connect load itself:
+
+| Limit | Default | What it protects |
+| --- | --- | --- |
+| Concurrent queries | 5 | Oracle sessions on the Monitoring node (also the connection-pool size) |
+| Queue wait | 5 s | How long a call waits for a free slot before being refused |
+| Query timeout | 60 s | Cancels the statement **on the Monitoring node**, not just client-side |
+| Sustained rate | 30/min | A runaway loop that a concurrency cap alone would not catch |
+| Default `days_back` | 7 days | Prevents an unbounded full scan of large event views |
+| Maximum `days_back` | 90 days | Larger values are **reduced to 90, not rejected** |
+| Injected row limit | 500 (5000 for aggregates) | Bounds `ise_dc_query` when it supplies no `FETCH FIRST` |
+| Fact views per query | 3 | Large event views joinable at once; lookup views are exempt |
+
+**The `days_back` default.** Views with a time column (`radius_authentications`,
+`radius_accounting`, `tacacs_*`, ...) get a 7-day window when you do not specify one:
+
+```
+"Show RADIUS authentications for user bob"        -> last 7 days   (default applied)
+"Show RADIUS authentications for bob, 30 days"    -> last 30 days  (explicit)
+"Show RADIUS authentications for bob, 120 days"   -> last 90 days  (clamped to the maximum)
+```
+
+Small configuration views without a time column (`network_devices`, `security_groups`,
+`endpoint_identity_groups`, ...) are exempt entirely.
+
+**`ise_dc_query` (raw SQL).** A query with no row limit gets one appended automatically.
+It is rejected only when it cannot be corrected safely: a large event view with no time
+predicate, a `JOIN` with no `ON` condition, or more than three large event views. Common
+table expressions (`WITH ... AS ( ... ) SELECT ...`) are supported. Note the asymmetry —
+the 90-day clamp applies to the structured `days_back` parameter; a hand-written time
+predicate in raw SQL is *not* clamped, so the 60-second timeout is the backstop there.
+
+**Tuning.** Environment variables (`CISCO_ISE_MCP_*`, see [section 10](#10-environment-variables))
+are hard ceilings; a per-deployment override may only tighten them:
+
+```bash
+cisco-ise-mcp update radius-only --dc-max-concurrent 3 --dc-query-timeout-s 30
+```
+
+Check what is actually in force with `ise_limits_status` or `cisco-ise-mcp test <slug>`.
+
 ## 9. Running the server
 
 The server speaks MCP over **stdio** — it is normally started by your AI client, not by
@@ -635,7 +707,11 @@ managing deployments and are covered above.
 
 You normally configure the server with the CLI or the AI agent — **no environment
 variables are required**. The variables below are for advanced situations: relocating
-the registry, injecting passwords on a headless host, and gating destructive tools.
+the registry, injecting passwords on a headless host, gating destructive tools, and
+tuning resource limits.
+
+The `CISCO_ISE_MCP_*` limit variables are **hard ceilings**: a per-deployment `limits`
+block in `deployments.json` may only *tighten* them, never raise them.
 
 **Configuration Source** is *where you set the variable*: the agent's MCP-config `env`
 block (see [section 11](#11-connecting-an-ai-agent)), a `.env` file in the project root
@@ -648,6 +724,18 @@ or container secrets.
 | `CISCO_ISE_MCP_HOME` | Override the folder holding the registry (`deployments.json`) and any certificates. | Agent MCP-config `env` block · `.env` · shell/container env | Any writable directory path. | OS-specific: Windows `%APPDATA%\cisco-ise-mcp`; macOS `~/Library/Application Support/cisco-ise-mcp`; Linux `$XDG_CONFIG_HOME/cisco-ise-mcp` (else `~/.config/cisco-ise-mcp`). |
 | `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE` | Enable destructive ISE-side tools (delete, restore, rollback, CoA disconnect). Each call **also** requires `confirm=true`. | Agent MCP-config `env` block · `.env` · shell/container env | `1`, `true`, `yes`, `on` = enabled; any other value = disabled. | disabled (unset / `0`) |
 | `CISCO_ISE_MCP_BLOCKED_TOOLS` | Tools that are **always denied**, overriding the allow flag — use it to force the most disruptive actions through the ISE GUI. | Agent MCP-config `env` block · `.env` · shell/container env | Comma-separated tool names, e.g. `ise_ers_delete,ise_openapi_backup_restore`. | empty (nothing extra blocked) |
+| `CISCO_ISE_MCP_DC_MAX_CONCURRENT` | Max simultaneous Data Connect queries per deployment (also the Oracle pool size). | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `5` |
+| `CISCO_ISE_MCP_DC_ACQUIRE_WAIT_S` | Seconds a call waits for a free Data Connect slot before being refused. | Agent MCP-config `env` block · `.env` · shell/container env | Number of seconds, capped at 15. | `5` |
+| `CISCO_ISE_MCP_DC_QUERY_TIMEOUT_S` | Seconds a single query may run before it is cancelled **on the Monitoring node**. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of seconds. | `60` |
+| `CISCO_ISE_MCP_DC_QPM` | Sustained Data Connect queries per minute per deployment. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number. | `30` |
+| `CISCO_ISE_MCP_DC_DEFAULT_DAYS_BACK` | Window applied when a view query omits `days_back`. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of days. | `7` |
+| `CISCO_ISE_MCP_DC_MAX_DAYS_BACK` | Largest `days_back` allowed; larger requests are reduced to it, not rejected. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of days. | `90` |
+| `CISCO_ISE_MCP_DC_DEFAULT_ROW_LIMIT` | Row bound injected into `ise_dc_query` when it has none. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of rows. | `500` |
+| `CISCO_ISE_MCP_DC_DEFAULT_AGG_ROW_LIMIT` | Row bound injected when the raw query aggregates (`GROUP BY`/`COUNT`/...). | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of rows. | `5000` |
+| `CISCO_ISE_MCP_DC_MAX_FACT_VIEWS` | Large event views joinable in one `ise_dc_query`; lookup views are exempt. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number. | `3` |
+| `CISCO_ISE_MCP_ERS_MAX_CONCURRENT` | Max simultaneous ERS calls, out of Cisco's deployment-wide ~100. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `10` |
+| `CISCO_ISE_MCP_OPENAPI_MAX_CONCURRENT` | Max simultaneous Open API calls, out of Cisco's deployment-wide ~150. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `15` |
+| `CISCO_ISE_MCP_MNT_MAX_CONCURRENT` | Max simultaneous Monitoring (MnT) calls. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `5` |
 | `CISCO_ISE__<SLUG>__ISE_PASSWORD` | Inject a deployment's ERS / Open API password instead of using the OS keyring (headless / container). | `.env` · container secret env | The password string. | unset → try `*_FILE`, then OS keyring |
 | `CISCO_ISE__<SLUG>__ISE_PASSWORD_FILE` | File-path variant of the ERS password (Docker / Kubernetes secrets). | `.env` · container secret env | Path to a file whose contents are the password. | unset |
 | `CISCO_ISE__<SLUG>__DATACONNECT_PASSWORD` | Inject a deployment's Data Connect password (only if Data Connect is enabled). | `.env` · container secret env | The password string. | unset → try `*_FILE`, then OS keyring |
@@ -722,16 +810,16 @@ Windows). Pass deployment selection per request ("…on Deployment 2"); set
 
 ## 12. Available tools
 
-**202 tools total** — every ERS / Open API / Monitoring / Data Connect tool accepts an
+**203 tools total** — every ERS / Open API / Monitoring / Data Connect tool accepts an
 optional `deployment` argument (name, slug, or number).
 
 | Family | Count | Prefix | What |
 | --- | --- | --- | --- |
-| Meta / management | 10 | — | Routing, catalog info, and deployment management (below) |
+| Meta / management | 11 | — | Routing, catalog info, and deployment management (below) |
 | ERS | 82 | `ise_ers_` | Configuration CRUD (generic + typed per-resource) |
 | Open API | 66 | `ise_openapi_` | System/policy/cert/backup/patch/license + raw passthrough |
 | Monitoring (MnT) | 17 | `ise_mnt_` | Legacy live session / CoA / failure-reason queries (XML) + raw passthrough |
-| Data Connect | 27 | `ise_dc_` | Read-only reporting views + custom `SELECT` |
+| Data Connect | 27 | `ise_dc_` | Read-only reporting views + custom `SELECT` (row-bounded and time-bounded — see section 8) |
 
 **Meta tools:**
 
@@ -744,7 +832,8 @@ optional `deployment` argument (name, slug, or number).
 - `ise_update_deployment` — modify an existing deployment's non-secret fields (only what you pass changes).
 - `ise_remove_deployment` — remove a deployment (requires `confirm`).
 - `ise_set_default_deployment` — choose the default.
-- `ise_test_deployment` — check config/credentials, then an optional live read-only probe.
+- `ise_test_deployment` — check config/credentials and report effective resource limits, then an optional live read-only probe.
+- `ise_limits_status` — show the resource limits protecting each deployment and their live usage (in-flight calls, refusals).
 
 Discover the rest at runtime: ask the agent, or call `ise_ers_resources` /
 `ise_dc_list_views` / `ise_openapi_request` / `ise_mnt_request` (the live spec is at
@@ -791,6 +880,28 @@ automatically. With several, name one (or set a default).
   ```
 
 ## 15. Troubleshooting
+
+### Resource-limit refusals
+
+These are deliberate protections, not faults. Each refusal names the limit and how to proceed.
+
+| Message | Meaning | What to do |
+| --- | --- | --- |
+| `concurrency_limited` | All Data Connect / ERS / Open API / MnT slots for this deployment were busy and none freed within the queue wait. | Run fewer calls at once. Slots are held by long queries, so retrying instantly will not help — narrow each query so it finishes faster. |
+| `rate_limited` | The per-minute call budget for this deployment is exhausted. | Aggregate in SQL (`GROUP BY`) instead of querying in a loop, or wait a few seconds. |
+| `query_timeout` | The query ran past the 60-second limit and was cancelled **on the Monitoring node**. | Reduce `days_back`, filter on an indexed column, or aggregate rather than returning raw rows. |
+| `[time-predicate] ...` | A raw `ise_dc_query` referenced a large event view with no time bound. | Add e.g. `WHERE "TIMESTAMP" >= SYSTIMESTAMP - NUMTODSINTERVAL(7,'DAY')`. The refusal shows a corrected example. |
+| `[join-condition] ...` | A `JOIN` had no `ON`/`USING`, or a `CROSS JOIN` was used — a cartesian product. | Add the join condition. |
+| `[fact-view-limit] ...` | More than three large event views in one query. | Split the correlation, or aggregate one side first. Lookup views do not count. |
+
+Run `ise_limits_status` to see the configured caps and live usage, and
+[section 8](#resource-limits-data-connect) to tune them.
+
+**"I get fewer rows than I expected."** Views with a time column default to a **7-day**
+window when `days_back` is omitted, and any `days_back` above 90 is reduced to 90. Pass
+`days_back` explicitly to widen the range.
+
+
 
 **"More than one deployment is configured — specify which one."**
 Name a deployment in your request (by name or number), or set a default:
@@ -843,6 +954,20 @@ That's correct — the server waits silently for an MCP client over stdio.
 `CISCO_ISE_MCP_HOME`.
 
 ## 16. Security notes
+
+**Resource limits cannot be raised by the agent.** The `CISCO_ISE_MCP_*` environment
+variables are hard ceilings, and a per-deployment `limits` block may only tighten them.
+This matters because an AI agent *can* edit non-secret registry fields through
+`ise_update_deployment` — the ordering stops it granting itself a larger budget against
+your ISE deployment. Only an operator with access to the server's environment can raise a
+ceiling.
+
+**Data Connect query logging.** Data Connect reads are recorded in `audit.log` alongside
+the mutation trail (tagged `kind="dc_query"`) so monitoring-database load is visible. The
+log records the view, applied time window, duration, row count and outcome — deliberately
+**not** filter values or raw SQL, since a filter value is typically a username, MAC or IP.
+
+
 
 - **Passwords are never stored in files** by default — they go to the OS keyring, and are
   never passed through the AI agent. The agent only ever writes non-secret settings.

@@ -18,7 +18,20 @@ One running server can target many ISE deployments (e.g. a RADIUS deployment, a 
 - Each deployment has its **own Data Connect certificate**.
 - Add deployments straight from the AI agent (no file editing) or with the CLI.
 
-Tool surfaces are built from the Cisco-published OpenAPI **YAML specs** (ERS, Open API, Monitoring) — downloaded via `iseapi_yaml/links.yaml` and compiled into versioned JSON catalogs under `src/cisco_ise_mcp/catalog/` by `scripts/refresh_catalog.py`; Data Connect views are scraped from Cisco DevNet. On a **first install** run `uv run python scripts/refresh_catalog.py --all` to build all four catalogs; later runs (`scripts/refresh_catalog.py` or `cisco-ise-mcp refresh`) auto-build ERS + Open API and only rebuild the Data Connect / Monitor API catalogs if a deployment enables them. Target release: **Cisco ISE 3.4**. **202 tools** (82 ERS, 66 Open API, 17 Monitoring, 27 Data Connect, 10 meta).
+Tool surfaces are built from the Cisco-published OpenAPI **YAML specs** (ERS, Open API, Monitoring) — downloaded via `iseapi_yaml/links.yaml` and compiled into versioned JSON catalogs under `src/cisco_ise_mcp/catalog/` by `scripts/refresh_catalog.py`; Data Connect views are scraped from Cisco DevNet. On a **first install** run `uv run python scripts/refresh_catalog.py --all` to build all four catalogs; later runs (`scripts/refresh_catalog.py` or `cisco-ise-mcp refresh`) auto-build ERS + Open API and only rebuild the Data Connect / Monitor API catalogs if a deployment enables them. Target release: **Cisco ISE 3.4**. **203 tools** (82 ERS, 66 Open API, 17 Monitoring, 27 Data Connect, 11 meta).
+
+### Resource limits
+
+Cisco documents roughly **100 concurrent ERS** and **150 concurrent Open API** connections per deployment — budgets shared with pxGrid, the admin GUI and every other integration — and publishes **no limits at all** for Data Connect. Since the ISE `dataconnect` account is a read-only Oracle user with no DBA rights, server-side database governance is unavailable, so this server enforces its own limits client-side and claims only a small slice of the documented budgets:
+
+- **Data Connect** — 5 concurrent pooled sessions, a 60-second query timeout that cancels the statement *on the Monitoring node*, 30 queries/minute, and a default 7-day window on time-series views (larger requests are reduced to 90 days, not rejected).
+- **ERS / Open API / MnT** — 10 / 15 / 5 concurrent calls.
+
+Every value is tunable. Environment variables (`CISCO_ISE_MCP_*`, see `.env.example`) are **hard ceilings**; a per-deployment `limits` block may only tighten them. Call `ise_limits_status` or `cisco-ise-mcp test <slug>` to see what is in force.
+
+## What changed
+
+**[docs/UPDATES.md](docs/UPDATES.md)** is the change log for this server — every release lists, by date, each modification that was made and why. Check it after pulling a new version: entries marked **BREAKING CHANGE** describe behaviour that differs from previous releases, what stops working, and how to adapt.
 
 ## Quick start (with [uv](https://docs.astral.sh/uv/))
 
@@ -53,4 +66,4 @@ tool results additionally carry a machine-readable `structuredContent` payload;
 `python -m cisco_ise_mcp`, or `python -m cisco_ise_mcp.server`.
 
 
-Full setup (Windows / macOS / Linux), credential security, Data Connect certificates, adding multiple deployments, connecting Claude Desktop / Hermes / other MCP clients, the tool list, and troubleshooting are in **[USER_GUIDE.md](docs/USER_GUIDE.md)**.
+Full setup (Windows / macOS / Linux), credential security, Data Connect certificates, adding multiple deployments, connecting Claude Desktop / Hermes / other MCP clients, the tool list, and troubleshooting are in **[USER_GUIDE.md](docs/USER_GUIDE.md)**. Recent changes are listed in **[UPDATES.md](docs/UPDATES.md)**.

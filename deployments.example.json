@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "_comment": "EXAMPLE ONLY — this file shows the structure of deployments.json. Do NOT use as-is: replace host, ers_username, and dataconnect.cert_path with your real values, then set passwords with 'cisco-ise-mcp set-credential <slug>'. Your real registry is auto-created blank in the per-user config dir; manage it with 'cisco-ise-mcp add/update/remove' (or your AI agent) instead of editing by hand. SECURITY: every verify_ssl / dataconnect.verify_ssl here is true (the secure default) — keep it true in production; set it to false ONLY for a self-signed lab, which disables MITM protection for the ISE admin/Data Connect credentials. NOTES: (1) monitoring_enabled controls the Monitoring API (MAPI/MnT, ise_mnt_*) — it is OPT-IN (omit it on a pre-existing deployment to keep MnT on; new deployments default it to false) and needs the ERS account in ISE's 'MnT Admin' group. (2) dataconnect.host is OPTIONAL — leave it empty (or omit it) to run Data Connect on the same admin host (see radius-only); set it to the MnT/Monitoring node when Data Connect lives on a different IP/FQDN than the primary Admin node (see tacacs-only). (3) dataconnect.os_trust=true validates a CA-signed Data Connect certificate against the OS/default CA store, so no cert_path is needed (see vpn-only); leave it false and set cert_path for a self-signed cert.",
+  "_comment": "EXAMPLE ONLY — this file shows the structure of deployments.json. Do NOT use as-is: replace host, ers_username, and dataconnect.cert_path with your real values, then set passwords with 'cisco-ise-mcp set-credential <slug>'. Your real registry is auto-created blank in the per-user config dir; manage it with 'cisco-ise-mcp add/update/remove' (or your AI agent) instead of editing by hand. SECURITY: every verify_ssl / dataconnect.verify_ssl here is true (the secure default) — keep it true in production; set it to false ONLY for a self-signed lab, which disables MITM protection for the ISE admin/Data Connect credentials. NOTES: (1) monitoring_enabled controls the Monitoring API (MAPI/MnT, ise_mnt_*) — it is OPT-IN (omit it on a pre-existing deployment to keep MnT on; new deployments default it to false) and needs the ERS account in ISE's 'MnT Admin' group. (2) dataconnect.host is OPTIONAL — leave it empty (or omit it) to run Data Connect on the same admin host (see radius-only); set it to the MnT/Monitoring node when Data Connect lives on a different IP/FQDN than the primary Admin node (see tacacs-only). (3) dataconnect.os_trust=true validates a CA-signed Data Connect certificate against the OS/default CA store, so no cert_path is needed (see vpn-only); leave it false and set cert_path for a self-signed cert. (4) 'limits' is OPTIONAL and sparse — omit it entirely (see tacacs-only and vpn-only) to use the documented defaults: Data Connect 5 concurrent / 60s timeout / 30 per minute / 7-day default window capped at 90, ERS 10, Open API 15, MnT 5. Values here may only TIGHTEN the CISCO_ISE_MCP_* environment ceilings, never raise them. Run 'cisco-ise-mcp test <slug>' or ise_limits_status to see the effective values.",
   "default": "radius-only",
   "deployments": {
     "radius-only": {
@@ -23,6 +23,15 @@
         "verify_ssl": true,
         "os_trust": false,
         "oracle_client_lib": ""
+      },
+      "limits": {
+        "dataconnect": {
+          "max_concurrent": 3,
+          "query_timeout_s": 45
+        },
+        "ers": {
+          "max_concurrent": 8
+        }
       }
     },
     "tacacs-only": {
