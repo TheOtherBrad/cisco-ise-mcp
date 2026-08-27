@@ -148,6 +148,55 @@ _DC_DEFAULTS: dict[str, Any] = {
     "oracle_client_lib": "",
 }
 
+# Per-deployment resource limits (optional; absent means "use the defaults").
+#
+# Deliberately NOT given a defaults dict here: the authoritative defaults and the
+# environment ceilings live in ``cisco_ise_mcp.limits``, and duplicating them
+# would create two sources of truth that could drift. The registry block stays
+# sparse — only what an operator explicitly set — and ``limits.resolve_policy``
+# applies the ceiling, tightening (never raising) with these values.
+#
+# Shape:  "limits": {"dataconnect": {"max_concurrent": 3}, "ers": {...}}
+_LIMIT_FIELDS: dict[str, tuple] = {
+    "dc_max_concurrent": ("dataconnect", "max_concurrent"),
+    "dc_query_timeout_s": ("dataconnect", "query_timeout_s"),
+    "dc_max_per_minute": ("dataconnect", "max_per_minute"),
+    "dc_default_days_back": ("dataconnect", "default_days_back"),
+    "dc_max_days_back": ("dataconnect", "max_days_back"),
+    "dc_default_row_limit": ("dataconnect", "default_row_limit"),
+    "dc_max_fact_views": ("dataconnect", "max_fact_views"),
+    "ers_max_concurrent": ("ers", "max_concurrent"),
+    "openapi_max_concurrent": ("openapi", "max_concurrent"),
+    "monitoring_max_concurrent": ("monitoring", "max_concurrent"),
+}
+
+# Deployments already warned about missing limits, so the notice is emitted once
+# per process rather than on every tool call.
+_LIMITS_NOTICE_SEEN: set = set()
+
+
+def _limits_block(dep: dict, slug: str) -> dict:
+    """Return the deployment's sparse limits block, logging once when absent.
+
+    A registry written before resource governance existed simply has no 'limits'
+    key; it loads unchanged and receives the documented defaults. The one-time
+    log tells the operator which defaults are now in force and how to override.
+    """
+    block = dep.get("limits")
+    if isinstance(block, dict) and block:
+        return block
+    if slug not in _LIMITS_NOTICE_SEEN:
+        _LIMITS_NOTICE_SEEN.add(slug)
+        logger.info(
+            "Deployment '%s' has no 'limits' block; applying default resource limits "
+            "(Data Connect: 5 concurrent, 60s query timeout, 30 queries/min, 7-day default "
+            "window capped at 90; ERS 10, Open API 15, MnT 5 concurrent). Override per "
+            "deployment with '%s', or set the CISCO_ISE_MCP_* environment ceilings. "
+            "Run ise_limits_status or 'cisco-ise-mcp test %s' to see the effective values.",
+            slug, cli_cmd(f"update {slug} --dc-max-concurrent N"), slug)
+    return {}
+
+
 # Monitoring (MnT / "MAPI") is enabled per deployment. The flag is OPTIONAL in the
 # registry: when the key is ABSENT a deployment is treated as ENABLED, so registries
 # that predate this field keep MnT working unchanged. New deployments written by
@@ -591,6 +640,7 @@ def get_deployment_config(selector: Optional[str] = None, surface: Optional[str]
         "dataconnect_verify_ssl": bool(dc["verify_ssl"]),
         "dataconnect_os_trust": bool(dc["os_trust"]),
         "dataconnect_oracle_client_lib": dc["oracle_client_lib"],
+        "limits": _limits_block(dep, slug),
     }
 
     if surface in ("ers", "openapi", "monitoring"):
@@ -621,6 +671,34 @@ def get_deployment_config(selector: Optional[str] = None, surface: Optional[str]
         cfg["dataconnect_password"] = _resolve_secret(slug, _CRED_DC)
 
     return cfg
+
+
+def surface_limits(cfg: dict, surface: str) -> dict:
+    """Sparse per-surface limit overrides from a resolved deployment config."""
+    return (cfg.get("limits") or {}).get(surface) or {}
+
+
+def _collect_limits(fields: dict, errors: list) -> dict:
+    """Map flat ``dc_max_concurrent``-style kwargs into the nested registry block.
+
+    Values must be positive whole numbers; a non-numeric or negative value is a
+    hard error rather than a silent skip, so a typo cannot quietly leave a
+    deployment running on a limit the operator thought they had changed.
+    """
+    out: dict[str, dict] = {}
+    for flat, (surface, key) in _LIMIT_FIELDS.items():
+        if flat not in fields or fields[flat] is None:
+            continue
+        try:
+            value = int(fields[flat])
+        except (TypeError, ValueError):
+            errors.append(f"{flat} must be a whole number (got {fields[flat]!r})")
+            continue
+        if value < 1:
+            errors.append(f"{flat} must be 1 or greater (got {value})")
+            continue
+        out.setdefault(surface, {})[key] = value
+    return out
 
 
 def get_config(selector: Optional[str] = None, surface: Optional[str] = None) -> dict:
@@ -661,6 +739,7 @@ def add_deployment(
     dataconnect_os_trust: bool = False,
     dataconnect_oracle_client_lib: str = "",
     make_default: Optional[bool] = None,
+    **limit_fields: Any,
 ) -> dict:
     """Validate and persist a new deployment (non-secret fields only)."""
     errors: list[str] = []
@@ -687,6 +766,7 @@ def add_deployment(
     ep = _as_port(ers_port, "ers_port", errors)
     op = _as_port(openapi_port, "openapi_port", errors)
     dp = _as_port(dataconnect_port, "dataconnect_port", errors)
+    limits_block = _collect_limits(limit_fields, errors)
     if errors:
         raise ConfigError(
             "Cannot add the deployment — please provide/fix:\n"
@@ -726,6 +806,10 @@ def add_deployment(
             "oracle_client_lib": dataconnect_oracle_client_lib or "",
         },
     }
+    # Written only when the operator set something: an absent block means
+    # "use the documented defaults", which is what every existing registry has.
+    if limits_block:
+        reg["deployments"][slug]["limits"] = limits_block
     if make_default or (make_default is None and len(reg["deployments"]) == 1):
         reg["default"] = slug
     save_registry(reg)
@@ -853,7 +937,7 @@ def update_deployment(selector: str, reslug: bool = False, **fields: Any) -> dic
     _KNOWN = ({"name", "verify_ssl", "ca_cert_path", "monitoring_enabled",
                "dataconnect_enabled", "dataconnect_port", "dataconnect_mode",
                "dataconnect_verify_ssl", "dataconnect_os_trust"}
-              | _TOP_STR | set(_TOP_PORT) | set(_DC_STR))
+              | _TOP_STR | set(_TOP_PORT) | set(_DC_STR) | set(_LIMIT_FIELDS))
     unknown = [k for k in fields if k not in _KNOWN]
     if unknown:
         raise ConfigError(f"Unknown field(s): {', '.join(sorted(unknown))}. Allowed: {', '.join(sorted(_KNOWN))}.")
@@ -861,6 +945,16 @@ def update_deployment(selector: str, reslug: bool = False, **fields: Any) -> dic
     errors: list[str] = []
     changed: list[str] = []
     dc_changed = False
+
+    # Merge limit overrides into the existing block (patch semantics, like the rest).
+    new_limits = _collect_limits(fields, errors)
+    if new_limits:
+        merged = {s: dict(v) for s, v in (dep.get("limits") or {}).items()}
+        for surface, values in new_limits.items():
+            merged.setdefault(surface, {}).update(values)
+        if merged != dep.get("limits"):
+            dep["limits"] = merged
+            changed.append("limits")
 
     def _set_top(key: str, value: Any) -> None:
         if dep.get(key) != value:
@@ -1088,11 +1182,35 @@ def validate_deployment(selector: Optional[str] = None) -> dict:
         "dataconnect_host": dc_host_explicit or dep.get("host", ""),
         "dataconnect_host_explicit": bool(dc_host_explicit),
         "dataconnect_os_trust": bool(dc["os_trust"]),
+        "limits": _effective_limits(dep, slug, warnings),
         "missing_fields": missing_fields,
         "missing_credentials": missing_credentials,
         "fix_commands": fix_commands,
         "warnings": warnings,
     }
+
+
+def _effective_limits(dep: dict, slug: str, warnings: list) -> dict:
+    """Resolved limits per surface, warning where an env ceiling clamped a value.
+
+    Surfaced by ``ise_test_deployment`` — the command operators already run after
+    any change — so an upgrade's new limits become visible without hunting for
+    them.
+    """
+    from cisco_ise_mcp.limits import SURFACES, resolve_policy
+
+    block = dep.get("limits") or {}
+    out: dict[str, Any] = {}
+    for surface in SURFACES:
+        policy = resolve_policy(surface, slug, block.get(surface))
+        out[surface] = policy.as_dict()
+        if policy.clamped:
+            warnings.append(
+                f"limits.{surface}: {', '.join(policy.clamped)} exceeded the environment "
+                f"ceiling and was reduced. Environment variables are hard ceilings; a "
+                f"per-deployment value can only tighten them."
+            )
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -1131,5 +1249,6 @@ __all__ = [
     "get_deployment_config", "get_config",
     "add_deployment", "update_deployment", "remove_deployment", "set_default", "get_default", "get_note",
     "set_credential", "delete_credentials", "validate_deployment",
+    "surface_limits",
     "DEPLOYMENT_PROP", "with_deployment",
 ]
