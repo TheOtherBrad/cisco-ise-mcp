@@ -29,11 +29,13 @@ import asyncio
 import logging
 import os
 import uuid
+from typing import Optional
 
 from mcp.types import Tool
 
 from cisco_ise_mcp import _mcpcompat as compat
 from cisco_ise_mcp import audit, catalog, config, routing
+from cisco_ise_mcp.limits import LimitExceeded
 from cisco_ise_mcp.openapi import (
     list_ers_tools, handle_ers_tool,
     list_openapi_tools, handle_openapi_tool,
@@ -128,7 +130,17 @@ _META_TOOLS = [
             "dataconnect_verify_ssl": {"type": "boolean", "default": True},
             "dataconnect_os_trust": {"type": "boolean", "default": False, "description": "CA-signed Data Connect cert: validate the chain against the OS/default CA trust store instead of a downloaded PEM (no cert_path needed). Leave false for a self-signed cert. macOS reads the OpenSSL/certifi bundle, not the Keychain."},
             "dataconnect_oracle_client_lib": {"type": "string", "description": "Optional Oracle Instant Client dir (thick mode)."},
-            "make_default": {"type": "boolean", "description": "Make this the default deployment."}}},
+            "make_default": {"type": "boolean", "description": "Make this the default deployment."},
+            "dc_max_concurrent": {"type": "integer", "description": "Max simultaneous Data Connect queries for this deployment (default 5). May only tighten the CISCO_ISE_MCP_DC_MAX_CONCURRENT ceiling."},
+            "dc_query_timeout_s": {"type": "integer", "description": "Seconds a single Data Connect query may run before it is cancelled ON the MnT node (default 60)."},
+            "dc_max_per_minute": {"type": "integer", "description": "Sustained Data Connect queries per minute (default 30). Bounds a runaway loop that a concurrency cap alone misses."},
+            "dc_default_days_back": {"type": "integer", "description": "Time window applied when a view query omits days_back (default 7)."},
+            "dc_max_days_back": {"type": "integer", "description": "Largest days_back allowed (default 90). Larger requests are reduced to this, not rejected."},
+            "dc_default_row_limit": {"type": "integer", "description": "Row bound injected into ise_dc_query when it has none (default 500; 5000 for aggregates)."},
+            "dc_max_fact_views": {"type": "integer", "description": "Max large event views joinable in one ise_dc_query (default 3). Small lookup views are exempt."},
+            "ers_max_concurrent": {"type": "integer", "description": "Max simultaneous ERS calls (default 10, of Cisco's deployment-wide 100)."},
+            "openapi_max_concurrent": {"type": "integer", "description": "Max simultaneous Open API calls (default 15, of Cisco's deployment-wide 150)."},
+            "monitoring_max_concurrent": {"type": "integer", "description": "Max simultaneous MnT calls (default 5)."},}},
     ),
     Tool(
         name="ise_update_deployment",
@@ -162,7 +174,17 @@ _META_TOOLS = [
             "dataconnect_wallet_path": {"type": "string"},
             "dataconnect_verify_ssl": {"type": "boolean"},
             "dataconnect_os_trust": {"type": "boolean", "description": "CA-signed Data Connect cert: validate against the OS/default CA store instead of a PEM (no cert_path needed). False for self-signed."},
-            "dataconnect_oracle_client_lib": {"type": "string"}}},
+            "dataconnect_oracle_client_lib": {"type": "string"},
+            "dc_max_concurrent": {"type": "integer", "description": "Max simultaneous Data Connect queries for this deployment (default 5). May only tighten the CISCO_ISE_MCP_DC_MAX_CONCURRENT ceiling."},
+            "dc_query_timeout_s": {"type": "integer", "description": "Seconds a single Data Connect query may run before it is cancelled ON the MnT node (default 60)."},
+            "dc_max_per_minute": {"type": "integer", "description": "Sustained Data Connect queries per minute (default 30). Bounds a runaway loop that a concurrency cap alone misses."},
+            "dc_default_days_back": {"type": "integer", "description": "Time window applied when a view query omits days_back (default 7)."},
+            "dc_max_days_back": {"type": "integer", "description": "Largest days_back allowed (default 90). Larger requests are reduced to this, not rejected."},
+            "dc_default_row_limit": {"type": "integer", "description": "Row bound injected into ise_dc_query when it has none (default 500; 5000 for aggregates)."},
+            "dc_max_fact_views": {"type": "integer", "description": "Max large event views joinable in one ise_dc_query (default 3). Small lookup views are exempt."},
+            "ers_max_concurrent": {"type": "integer", "description": "Max simultaneous ERS calls (default 10, of Cisco's deployment-wide 100)."},
+            "openapi_max_concurrent": {"type": "integer", "description": "Max simultaneous Open API calls (default 15, of Cisco's deployment-wide 150)."},
+            "monitoring_max_concurrent": {"type": "integer", "description": "Max simultaneous MnT calls (default 5)."},}},
     ),
     Tool(
         name="ise_remove_deployment",
@@ -176,6 +198,20 @@ _META_TOOLS = [
         description="Set which deployment is used when a tool call does not name one.",
         inputSchema={"type": "object", "required": ["deployment"], "properties": {
             "deployment": {"type": "string", "description": "Name, slug, or number to make the default."}}},
+    ),
+    Tool(
+        name="ise_limits_status",
+        description=(
+            "Show the resource limits protecting each ISE deployment and their live usage. "
+            "Reports the configured cap per surface (Data Connect / ERS / Open API / MnT), the "
+            "effective value after environment ceilings are applied, which values a per-deployment "
+            "override tightened, in-flight calls, and how many calls have been refused. Use this "
+            "when a call is refused with 'concurrency_limited', 'rate_limited' or 'query_timeout' "
+            "to see what is actually in force."
+        ),
+        inputSchema={"type": "object", "properties": {
+            "deployment": {"type": "string", "description": (
+                "Name, slug, or number. Omit to report every deployment's configured limits.")}}},
     ),
     Tool(
         name="ise_test_deployment",
@@ -275,7 +311,7 @@ _ADD_FIELDS = {
     "dataconnect_enabled", "dataconnect_host", "dataconnect_port", "dataconnect_sid",
     "dataconnect_user", "dataconnect_mode", "dataconnect_cert_path", "dataconnect_wallet_path",
     "dataconnect_verify_ssl", "dataconnect_os_trust", "dataconnect_oracle_client_lib", "make_default",
-}
+} | set(config._LIMIT_FIELDS)
 
 # Update accepts the same non-secret fields as add, minus make_default (use
 # ise_set_default_deployment) and without requiring name/host.
@@ -387,7 +423,35 @@ async def _handle_meta(name: str, arguments: dict) -> compat.ToolResult:
         return _text(config.set_default(arguments.get("deployment", "")))
     if name == "ise_test_deployment":
         return _text(await _test_deployment(arguments))
+    if name == "ise_limits_status":
+        return _text(_limits_status(arguments.get("deployment")))
     raise ValueError(f"Unknown meta tool: {name}")
+
+
+def _limits_status(selector: Optional[str] = None) -> dict:
+    """Configured limits per deployment plus live usage from active limiters."""
+    from cisco_ise_mcp.limits import SURFACES, resolve_policy, snapshot_all
+
+    reg = config.load_registry()
+    slugs = [config.resolve_deployment(selector)] if selector else list(reg["deployments"])
+    configured: dict = {}
+    for slug in slugs:
+        block = (reg["deployments"].get(slug, {}) or {}).get("limits") or {}
+        configured[slug] = {
+            s: resolve_policy(s, slug, block.get(s)).as_dict() for s in SURFACES
+        }
+    return {
+        "configured": configured,
+        "live": snapshot_all(),
+        "precedence": (
+            "Environment variables (CISCO_ISE_MCP_*) are hard ceilings; a per-deployment "
+            "'limits' block in the registry may only tighten them, never raise them."
+        ),
+        "note": (
+            "'live' lists only limiters created since the server started — a surface that "
+            "has not been called yet will be absent."
+        ),
+    }
 
 
 # Meta tools that change persisted state (registry). Read-only meta tools
@@ -554,6 +618,14 @@ async def call_tool(name: str, arguments: dict) -> compat.ToolResult:
         if mutating:
             audit.record(name, arguments, deployment=dep, status="ok")
         return result
+    except LimitExceeded as e:
+        # A resource limit refused the call. Return its structured payload — the
+        # agent gets actionable guidance ("narrow the query") instead of a stack
+        # trace, in the same shape as the destructive-tool refusal above.
+        if mutating:
+            audit.record(name, arguments, deployment=dep,
+                         status="denied", error=e.payload.get("error"))
+        return _text({**e.payload, "tool": name})
     except Exception as e:  # noqa: BLE001 — surface errors to the agent as a result
         if mutating:
             audit.record(name, arguments, deployment=dep,
