@@ -22,17 +22,27 @@ Tools:
 
 from __future__ import annotations
 
+import asyncio
+import logging
+import time
 from typing import Any
 
 from mcp.types import Tool
 
 from cisco_ise_mcp import _mcpcompat as compat
-from cisco_ise_mcp import catalog
-from cisco_ise_mcp.config import get_config, with_deployment
-from cisco_ise_mcp.dataconnect.client import ISEDataConnectClient, build_query, validate_raw_select
+from cisco_ise_mcp import audit, catalog
+from cisco_ise_mcp.config import get_config, surface_limits, with_deployment
+from cisco_ise_mcp.dataconnect.client import (
+    ISEDataConnectClient, build_query, resolve_days_back, validate_raw_select,
+)
+from cisco_ise_mcp.limits import get_limiter
+
+logger = logging.getLogger(__name__)
 
 # Hard row cap for the raw ise_dc_query path (mirrors the structured build_query
-# cap) so an unbounded SELECT can't exhaust memory.
+# cap) so an unbounded SELECT can't exhaust memory. This is the OUTER ceiling: a
+# smaller default bound is injected into the SQL itself when the caller supplies
+# none, so Oracle stops producing rows rather than the client stopping reading.
 _RAW_QUERY_CAP = 10000
 
 # Typed shortcuts for the most-used reporting views (others via generic ise_dc_view).
@@ -53,7 +63,10 @@ _FILTER_PROPS = {
                   "default": "EQ", "description": "EQ=exact, CONTAINS/LIKE=substring, GT/LT/GTE/LTE=compare."},
     "order_by": {"type": "string", "description": "Column to sort by (prefix '-' for descending)."},
     "limit": {"type": "integer", "default": 100, "description": "Max rows (default 100, max 10000)."},
-    "days_back": {"type": "integer", "description": "Only rows from the last N days (uses the view's time column)."},
+    "days_back": {"type": "integer", "description": (
+        "Only rows from the last N days (uses the view's time column). If omitted, a 7-day "
+        "window is applied by default to limit load on the ISE Monitoring node. Maximum 90 — "
+        "larger values are reduced to 90 rather than rejected.")},
 }
 
 
@@ -116,6 +129,8 @@ async def handle_dataconnect_tool(name: str, arguments: dict) -> compat.ToolResu
         return _text(_describe(arguments["view"]))
 
     cfg = get_config(arguments.get("deployment"), surface="dataconnect")
+    limiter = get_limiter(cfg["_slug"], "dataconnect", surface_limits(cfg, "dataconnect"))
+    policy = limiter.policy
     client = ISEDataConnectClient(
         host=cfg["dataconnect_host"],
         port=cfg.get("dataconnect_port", 2484),
@@ -128,37 +143,101 @@ async def handle_dataconnect_tool(name: str, arguments: dict) -> compat.ToolResu
         verify_ssl=cfg.get("dataconnect_verify_ssl", True),
         os_trust=cfg.get("dataconnect_os_trust", False),
         oracle_client_lib=cfg.get("dataconnect_oracle_client_lib", ""),
+        max_sessions=policy.max_concurrent,
+        acquire_wait_s=policy.acquire_wait_s,
+        query_timeout_s=policy.query_timeout_s,
     )
     try:
-        if name == "ise_dc_query":
-            sql = arguments["sql"]
-            allowed = {v["view"].upper() for v in catalog.get_dc_views(include_internal=True).values()}
-            validate_raw_select(sql, allowed)
-            rows = client.execute_query(sql, max_rows=_RAW_QUERY_CAP)
-            if len(rows) >= _RAW_QUERY_CAP:
-                return _text({
-                    "truncated": True,
-                    "row_cap": _RAW_QUERY_CAP,
-                    "note": (f"Result capped at {_RAW_QUERY_CAP} rows. Add your own "
-                             f"FETCH FIRST n ROWS ONLY / aggregation to narrow it."),
-                    "rows": rows,
-                })
-            return _text(rows)
-        if name == "ise_dc_view" or name.startswith("ise_dc_view_"):
-            key = arguments["view"] if name == "ise_dc_view" else name[len("ise_dc_view_"):]
-            return _text(_run_view(client, key, arguments))
-        raise ValueError(f"Unknown Data Connect tool: {name}")
+        # The limiter bounds how many queries run at once; asyncio.to_thread keeps
+        # the blocking Oracle driver off the event loop so one slow query cannot
+        # stall concurrent ERS / Open API / MnT tool calls.
+        async with limiter.slot():
+            if name == "ise_dc_query":
+                return _text(await asyncio.to_thread(
+                    _run_raw, client, arguments["sql"], policy, cfg["_slug"]))
+            if name == "ise_dc_view" or name.startswith("ise_dc_view_"):
+                key = arguments["view"] if name == "ise_dc_view" else name[len("ise_dc_view_"):]
+                return _text(await asyncio.to_thread(
+                    _run_view, client, key, arguments, policy, cfg["_slug"]))
+            raise ValueError(f"Unknown Data Connect tool: {name}")
     finally:
         client.close()
 
 
-def _run_view(client: ISEDataConnectClient, key: str, arguments: dict) -> Any:
+def _run_raw(client: ISEDataConnectClient, sql: str, policy: Any, slug: str) -> Any:
+    """Guard, bound and execute a raw SELECT (runs in a worker thread)."""
+    views = catalog.get_dc_views(include_internal=True)
+    allowed = {v["view"].upper() for v in views.values()}
+    time_cols = {v["view"].upper(): v.get("time_col") for v in views.values()}
+    guarded = validate_raw_select(
+        sql, allowed,
+        fact_views=catalog.get_fact_view_names(),
+        view_time_cols=time_cols,
+        policy=policy,
+    )
+    started = time.monotonic()
+    outcome = "ok"
+    rows: list = []
+    try:
+        rows = client.execute_query(guarded, max_rows=_RAW_QUERY_CAP)
+    except Exception:
+        outcome = "error"
+        raise
+    finally:
+        audit.record_dc_query(
+            "ise_dc_query", deployment=slug, rows=len(rows), outcome=outcome,
+            duration_ms=int((time.monotonic() - started) * 1000))
+    if len(rows) >= _RAW_QUERY_CAP:
+        return {
+            "truncated": True,
+            "row_cap": _RAW_QUERY_CAP,
+            "note": (f"Result capped at {_RAW_QUERY_CAP} rows. Add your own "
+                     f"FETCH FIRST n ROWS ONLY / aggregation to narrow it."),
+            "rows": rows,
+        }
+    return rows
+
+
+def _run_view(client: ISEDataConnectClient, key: str, arguments: dict,
+              policy: Any = None, slug: str = "") -> Any:
+    """Run a structured view query (runs in a worker thread).
+
+    Returns a bare row list — the response shape is unchanged, so the injected
+    default window and the 90-day clamp stay non-breaking for existing callers.
+    Both are announced in the tool schema (which the agent reads before calling)
+    and recorded in the Data Connect query log.
+    """
     views = catalog.get_dc_views(include_internal=True)
     info = views.get(key)
     if info is None:
         raise ValueError(f"Unknown Data Connect view: {key}. Use ise_dc_list_views.")
-    sql, binds = build_query(info["view"], arguments, time_col=info.get("time_col"))
-    return client.execute_query(sql, binds)
+
+    args = dict(arguments)
+    days, source = resolve_days_back(args, info.get("time_col"), policy) if policy else (
+        args.get("days_back"), "explicit")
+    if days is not None:
+        args["days_back"] = days
+    if source == "clamped":
+        logger.warning(
+            "Data Connect: days_back=%s requested for view '%s' exceeds the %s-day maximum; "
+            "the query ran with %s days instead.",
+            arguments.get("days_back"), key, getattr(policy, "max_days_back", "?"), days)
+
+    sql, binds = build_query(info["view"], args, time_col=info.get("time_col"))
+    started = time.monotonic()
+    outcome = "ok"
+    rows: list = []
+    try:
+        rows = client.execute_query(sql, binds)
+        return rows
+    except Exception:
+        outcome = "error"
+        raise
+    finally:
+        audit.record_dc_query(
+            key, deployment=slug, days_back=days, days_back_source=source,
+            row_limit=binds.get("maxrows"), rows=len(rows), outcome=outcome,
+            duration_ms=int((time.monotonic() - started) * 1000))
 
 
 def _list_views() -> list[dict]:
