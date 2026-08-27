@@ -76,3 +76,54 @@ def record(action: str, arguments: dict, *, deployment: Optional[str] = None,
             os.close(fd)
     except Exception as exc:  # noqa: BLE001 — auditing must never break the call
         logger.warning("Failed to write audit entry for %s: %s", action, exc)
+
+
+def record_dc_query(view: str, *, deployment: Optional[str] = None,
+                    days_back: Optional[int] = None, days_back_source: str = "",
+                    rows: Optional[int] = None, duration_ms: Optional[int] = None,
+                    row_limit: Optional[int] = None, outcome: str = "ok") -> None:
+    """Record one Data Connect query for load visibility. Never raises.
+
+    Data Connect reads are otherwise invisible — the mutation trail above
+    deliberately skips read-only calls — so there is no way to answer "how much
+    monitoring-database load did that agent command generate?". This fills that
+    gap without changing the mutation trail's meaning: entries are tagged
+    ``kind="dc_query"`` so the two can be separated.
+
+    Deliberately records *shape*, never data: the view, the applied time window
+    and why, row count, duration and outcome. Filter values and raw SQL are NOT
+    logged — a filter value is typically a username, MAC or IP (personal data),
+    and free-form SQL in a log line invites log injection.
+    """
+    try:
+        entry = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "kind": "dc_query",
+            "view": _one_line(view),
+            "deployment": deployment,
+            "days_back": days_back,
+            "days_back_source": days_back_source or None,
+            "row_limit": row_limit,
+            "rows": rows,
+            "duration_ms": duration_ms,
+            "outcome": outcome,
+        }
+        path = _audit_path()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        if not sys.platform.startswith("win"):
+            try:
+                os.chmod(path.parent, 0o700)
+            except OSError:
+                pass
+        fd = os.open(str(path), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o600)
+        try:
+            os.write(fd, (json.dumps(entry, default=str) + "\n").encode("utf-8"))
+        finally:
+            os.close(fd)
+    except Exception as exc:  # noqa: BLE001 — logging must never break the query
+        logger.warning("Failed to write Data Connect query log: %s", exc)
+
+
+def _one_line(value: str, limit: int = 120) -> str:
+    """Strip CR/LF and truncate — prevents forged entries via log injection."""
+    return str(value).replace("\r", " ").replace("\n", " ")[:limit]
