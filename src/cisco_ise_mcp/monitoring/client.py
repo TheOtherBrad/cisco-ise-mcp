@@ -43,6 +43,9 @@ class ISEMonitoringClient:
         self._client = httpx.AsyncClient(
             auth=(username, password),
             verify=admin_tls_verify(verify_ssl, ca_cert_path),
+            # Ignore HTTP(S)_PROXY / SSL_CERT_FILE etc. from the environment so
+            # admin credentials go only to the configured host with the configured trust.
+            trust_env=False,
             timeout=60.0,
             headers={"Accept": "application/xml"},
             **kwargs,
@@ -57,13 +60,18 @@ class ISEMonitoringClient:
     _PATH_PREFIX = "admin/API/mnt/"
 
     async def request(self, method: str, path: str,
-                      params: Optional[dict] = None) -> Any:
+                      params: Optional[dict] = None, raw: bool = False) -> Any:
         """Issue a request and return the raw response body as text.
 
         The MnT API returns XML; we surface it verbatim so the agent can read it
-        directly rather than risk a lossy XML->dict conversion.
+        directly rather than risk a lossy XML->dict conversion. ``raw=True`` marks
+        an agent-supplied passthrough path and applies the strict path checks;
+        catalog paths are built with per-parameter ``quote()`` instead.
         """
         clean = path.strip().lstrip("/")
+        if raw:
+            from cisco_ise_mcp.url_safety import check_passthrough_path
+            clean = check_passthrough_path(path, self._PATH_PREFIX, "MnT")
         if ".." in clean.split("/"):
             raise ValueError(f"Path traversal ('..') is not allowed in MnT path: {path!r}")
         if not clean.startswith(self._PATH_PREFIX):

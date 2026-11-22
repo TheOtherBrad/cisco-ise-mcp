@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import re
 from typing import Any, Optional
+from urllib.parse import quote
 
 from mcp.types import Tool
 
@@ -108,7 +109,14 @@ def _resolve(name: str, arguments: dict) -> tuple[str, str, Optional[dict]]:
         pname = m.group(1)
         if pname not in arguments:
             raise ValueError(f"Missing required path parameter '{pname}' for {name}.")
-        return str(arguments[pname])
+        value = str(arguments[pname])
+        # '.'/'..'/'' would become (or collapse into) a dot/empty segment and
+        # shift the remaining parameters of the MnT path.
+        if value.strip() in ("", ".", ".."):
+            raise ValueError(f"Invalid value for path parameter '{pname}' in {name}.")
+        # Encode every value as ONE path segment (as Open API does): a value like
+        # 'x?y=z' or 'a/../b' must not change the request target.
+        return quote(value, safe=":")
 
     path = _PLACEHOLDER.sub(_sub, entry["path"])
     return entry["method"], path, None
@@ -117,6 +125,6 @@ def _resolve(name: str, arguments: dict) -> tuple[str, str, Optional[dict]]:
 async def _dispatch(client: ISEMonitoringClient, name: str, arguments: dict) -> Any:
     if name == "ise_mnt_request":
         return await client.request(
-            arguments["method"], arguments["path"], params=arguments.get("params"))
+            arguments["method"], arguments["path"], params=arguments.get("params"), raw=True)
     method, path, params = _resolve(name, arguments)
     return await client.request(method, path, params=params)

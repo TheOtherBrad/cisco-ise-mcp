@@ -7,18 +7,23 @@ An [MCP](https://modelcontextprotocol.io) server that gives an AI agent programm
 - **Data Connect** (ISE 3.2+) — read-only SQL against the ISE monitoring database. The surface for **reporting / historical / aggregate / audit** data that no higher surface exposes.
 - **Monitoring (MnT)** — legacy `/admin/API/mnt` live session / CoA / failure-reason queries (returns XML). *Lowest precedence — use only when no higher surface serves the request.*
 
+> [!IMPORTANT]
+> **Read-only by default.** Out of the box the server can only **read** from ISE. No create, update or delete call is made, including CoA, session deletes, backup restore and patch install. Tools that could make a change are **not loaded at all**. The raw passthrough tools accept `GET` only, and the agent cannot add, edit or remove deployments; use the CLI for that. 163 of the 203 tools are available.
+>
+> To allow changes, set `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1` in the server environment and restart your MCP client. Destructive calls (deletes, restore/rollback, patch install, certificate import, CoA) then still require `confirm=true` on each call. To keep specific tools disabled even then, list them in `CISCO_ISE_MCP_BLOCKED_TOOLS` (comma-separated); listed tools are never loaded or run. Every call is written to a daily audit log. See [docs/USER_GUIDE.md](docs/USER_GUIDE.md) for where to set these variables.
+
 ### Multiple deployments
 
 One running server can target many ISE deployments (e.g. a RADIUS deployment, a TACACS+ deployment, a VPN deployment). You pick the target per request by **name** or **number**:
 
 > "List all RADIUS policy sets on **Deployment 1**"
-> "Add network device 'Office' (10.10.10.10) to the **TACACS Only** deployment"
+> "Add network device 'Office' (10.10.10.10) to the **TACACS Only** deployment" *(requires writes enabled)*
 
 - Non-secret config lives in a per-user registry (`deployments.json`); **passwords are stored separately in the OS keyring** (or injected via env vars on headless hosts).
 - Each deployment has its **own Data Connect certificate**.
-- Add deployments straight from the AI agent (no file editing) or with the CLI.
+- Add deployments with the CLI, or from the AI agent when writes are enabled (`CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1`).
 
-Tool surfaces are built from the Cisco-published OpenAPI **YAML specs** (ERS, Open API, Monitoring) — downloaded via `iseapi_yaml/links.yaml` and compiled into versioned JSON catalogs under `src/cisco_ise_mcp/catalog/` by `scripts/refresh_catalog.py`; Data Connect views are scraped from Cisco DevNet. On a **first install** run `uv run python scripts/refresh_catalog.py --all` to build all four catalogs; later runs (`scripts/refresh_catalog.py` or `cisco-ise-mcp refresh`) auto-build ERS + Open API and only rebuild the Data Connect / Monitor API catalogs if a deployment enables them. Target release: **Cisco ISE 3.4**. **203 tools** (82 ERS, 66 Open API, 17 Monitoring, 27 Data Connect, 11 meta).
+Tool surfaces are built from the Cisco-published OpenAPI **YAML specs** (ERS, Open API, Monitoring) — downloaded via `iseapi_yaml/links.yaml` and compiled into versioned JSON catalogs under `src/cisco_ise_mcp/catalog/` by `scripts/refresh_catalog.py`; Data Connect views are scraped from Cisco DevNet. On a **first install** run `uv run python scripts/refresh_catalog.py --all` to build all four catalogs; later runs (`scripts/refresh_catalog.py` or `cisco-ise-mcp refresh`) auto-build ERS + Open API and only rebuild the Data Connect / Monitor API catalogs if a deployment enables them. Target release: **Cisco ISE 3.4**. **203 tools** (82 ERS, 66 Open API, 17 Monitoring, 27 Data Connect, 11 meta); ~132k characters of tool definitions (~33k tokens).
 
 ### Resource limits
 
@@ -29,9 +34,21 @@ Cisco documents roughly **100 concurrent ERS** and **150 concurrent Open API** c
 
 Every value is tunable. Environment variables (`CISCO_ISE_MCP_*`, see `.env.example`) are **hard ceilings**; a per-deployment `limits` block may only tighten them. Call `ise_limits_status` or `cisco-ise-mcp test <slug>` to see what is in force.
 
+### Safety & token efficiency (v1.1.0)
+
+- **Every call is validated** against the tool's input schema on both MCP SDK majors; failures, refusals and errors are returned with `isError: true`.
+- **Destructive ISE operations are off by default.** This covers deletes, restore and rollback, patch install, certificate import, CoA reauth/disconnect and session deletes. They need `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1` **and** `confirm=true`, and are audited.
+- **`CISCO_ISE_MCP_BLOCKED_TOOLS`** denies any listed tool outright.
+- **MCP tool annotations** (`readOnlyHint`, `destructiveHint`) let clients auto-approve the 159 read-only tools.
+- **`ise_dc_query`** is checked with a real Oracle SQL parser. Every table must be a catalog view, and database links, schema-qualified names, system packages and `FOR UPDATE` are rejected.
+- **Admin TLS** requires TLS 1.2+ and ignores proxy and `SSL_CERT_FILE` environment variables.
+- **Smaller tool listing and results.** The tool listing is about 22% smaller. Results are sent as compact JSON, ERS hypermedia is trimmed, and `structuredContent` is opt-in (`CISCO_ISE_MCP_STRUCTURED=1`), which roughly halves result payloads.
+
+See `docs/CHANGELOG.md` (2026/11/22) for details and the breaking changes.
+
 ## What changed
 
-**[docs/UPDATES.md](docs/UPDATES.md)** is the change log for this server — every release lists, by date, each modification that was made and why. Check it after pulling a new version: entries marked **BREAKING CHANGE** describe behaviour that differs from previous releases, what stops working, and how to adapt.
+**[docs/CHANGELOG.md](docs/CHANGELOG.md)** is the change log for this server — every release lists, by date, each modification that was made and why. Check it after pulling a new version: entries marked **BREAKING CHANGE** describe behaviour that differs from previous releases, what stops working, and how to adapt.
 
 ## Quick start (with [uv](https://docs.astral.sh/uv/))
 
@@ -66,4 +83,4 @@ tool results additionally carry a machine-readable `structuredContent` payload;
 `python -m cisco_ise_mcp`, or `python -m cisco_ise_mcp.server`.
 
 
-Full setup (Windows / macOS / Linux), credential security, Data Connect certificates, adding multiple deployments, connecting Claude Desktop / Hermes / other MCP clients, the tool list, and troubleshooting are in **[USER_GUIDE.md](docs/USER_GUIDE.md)**. Recent changes are listed in **[UPDATES.md](docs/UPDATES.md)**.
+Full setup (Windows / macOS / Linux), credential security, Data Connect certificates, adding multiple deployments, connecting Claude Desktop / Hermes / other MCP clients, the tool list, and troubleshooting are in **[USER_GUIDE.md](docs/USER_GUIDE.md)**. Recent changes are listed in **[CHANGELOG.md](docs/CHANGELOG.md)**.

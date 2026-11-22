@@ -76,13 +76,16 @@ def cmd_serve(_args) -> int:
 
 
 def _find_refresh_script() -> Path | None:
-    """Locate scripts/refresh_catalog.py (project checkout); None if not found."""
+    """Locate scripts/refresh_catalog.py in THIS package's project checkout.
+
+    Only the path relative to the installed package is considered. The current
+    working directory is deliberately NOT searched: running ``cisco-ise-mcp
+    refresh`` inside an untrusted directory must never execute a planted
+    ``scripts/refresh_catalog.py`` (M7).
+    """
     here = Path(__file__).resolve()
-    candidates = [
-        Path.cwd() / "scripts" / "refresh_catalog.py",
-        here.parents[2] / "scripts" / "refresh_catalog.py",  # src/cisco_ise_mcp/cli.py -> repo root
-    ]
-    return next((c for c in candidates if c.is_file()), None)
+    candidate = here.parents[2] / "scripts" / "refresh_catalog.py"  # src/cisco_ise_mcp/cli.py -> repo root
+    return candidate if candidate.is_file() else None
 
 
 def cmd_refresh(args) -> int:
@@ -387,7 +390,7 @@ def cmd_set_credential(args) -> int:
     except RuntimeError as exc:
         return _err(str(exc))
     from cisco_ise_mcp import audit
-    audit.record("cli_set_credential", {"key": key}, deployment=slug, status="ok")
+    audit.record("cli_set_credential", {"key": key}, deployment=slug, status="ok", access="cli")
     print(f"Stored the {label} password for '{slug}' in the OS keyring.")
     return 0
 

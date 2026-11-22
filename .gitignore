@@ -3,7 +3,19 @@
 .env.*
 !.env.example
 deployments.json
+# Audit logs (if CISCO_ISE_MCP_HOME points inside the checkout) — may hold
+# usernames/MACs/IPs from tool arguments; never commit.
 audit.log
+logs/
+*.log
+# Credential exports and key material
+*.key
+*.p12
+*.pfx
+*.jks
+*.crt
+*.cer
+*.der
 *.pem
 *.sso
 wallet/
@@ -27,9 +39,15 @@ dist/
 *.tmp
 .deployments.*.tmp
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
 
 # OS / editor
 .DS_Store
+Thumbs.db
+*.swp
 .idea/
 .vscode/
 .claude/

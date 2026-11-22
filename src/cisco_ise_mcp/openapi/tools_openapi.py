@@ -54,6 +54,9 @@ class ISEOpenAPIClient:
         self._client = httpx.AsyncClient(
             auth=(username, password),
             verify=admin_tls_verify(verify_ssl, ca_cert_path),
+            # Ignore HTTP(S)_PROXY / SSL_CERT_FILE etc. from the environment so
+            # admin credentials go only to the configured host with the configured trust.
+            trust_env=False,
             timeout=60.0,
             headers={"Accept": "application/json", "Content-Type": "application/json"},
             **kwargs,
@@ -63,10 +66,10 @@ class ISEOpenAPIClient:
         await self._client.aclose()
 
     async def request(self, method: str, path: str,
-                      json: Optional[dict] = None, params: Optional[dict] = None) -> Any:
+                      json: Optional[dict] = None, params: Optional[dict] = None,
+                      raw: bool = False) -> Any:
+        from cisco_ise_mcp.url_safety import check_passthrough_path
         clean = path.strip().lstrip("/")
-        if ".." in clean.split("/"):
-            raise ValueError(f"Path traversal ('..') is not allowed in path: {path!r}")
         # Confine the passthrough to the Open API surface so a raw call cannot
         # reach other authenticated surfaces (/admin/..., /ers/...) on the host.
         if not clean.startswith("api/"):
@@ -74,6 +77,13 @@ class ISEOpenAPIClient:
                 f"Open API passthrough paths must start with '/api/' (got {path!r}). "
                 f"Use ise_ers_request for /ers/ or ise_mnt_request for /admin/API/mnt/ paths."
             )
+        # Catalog tools build their paths with quote(..., safe="") per parameter,
+        # so encoded characters are legitimate there; only the raw passthrough
+        # (raw=True) gets the strict encoded-character checks.
+        if raw:
+            clean = check_passthrough_path(path, "api/", "Open API")
+        elif ".." in clean.split("/"):
+            raise ValueError(f"Path traversal ('..') is not allowed in path: {path!r}")
         url = f"{self.base_url}/{clean}"
         resp = await self._client.request(method.upper(), url, json=json, params=params or {})
         resp.raise_for_status()
@@ -182,6 +192,6 @@ async def _dispatch_openapi(client: ISEOpenAPIClient, name: str, arguments: dict
     if name == "ise_openapi_request":
         return await client.request(
             arguments["method"], arguments["path"],
-            json=arguments.get("data"), params=arguments.get("params"))
+            json=arguments.get("data"), params=arguments.get("params"), raw=True)
     method, path, body, params = _resolve(name, arguments)
     return await client.request(method, path, json=body, params=params)

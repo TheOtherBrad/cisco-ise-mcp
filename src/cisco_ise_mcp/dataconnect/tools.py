@@ -57,16 +57,13 @@ _COMMON_VIEWS = [
 ]
 
 _FILTER_PROPS = {
-    "filter_column": {"type": "string", "description": "Column to filter on (case-insensitive)."},
-    "filter_value": {"type": "string", "description": "Value to match for the filter column."},
+    "filter_column": {"type": "string", "description": "Column to filter on."},
+    "filter_value": {"type": "string"},
     "filter_op": {"type": "string", "enum": ["EQ", "NEQ", "CONTAINS", "LIKE", "GT", "LT", "GTE", "LTE"],
-                  "default": "EQ", "description": "EQ=exact, CONTAINS/LIKE=substring, GT/LT/GTE/LTE=compare."},
-    "order_by": {"type": "string", "description": "Column to sort by (prefix '-' for descending)."},
-    "limit": {"type": "integer", "default": 100, "description": "Max rows (default 100, max 10000)."},
-    "days_back": {"type": "integer", "description": (
-        "Only rows from the last N days (uses the view's time column). If omitted, a 7-day "
-        "window is applied by default to limit load on the ISE Monitoring node. Maximum 90 — "
-        "larger values are reduced to 90 rather than rejected.")},
+                  "default": "EQ", "description": "CONTAINS/LIKE = substring."},
+    "order_by": {"type": "string", "description": "Sort column; '-' prefix = descending."},
+    "limit": {"type": "integer", "default": 100, "description": "Max rows (max 10000)."},
+    "days_back": {"type": "integer", "description": "Last N days on the view's time column. Default 7; max 90 (larger is reduced)."},
 }
 
 
@@ -96,9 +93,9 @@ def _build_tools() -> list[Tool]:
     ))
     tools.append(Tool(
         name="ise_dc_query",
-        description="Run a custom read-only SELECT against Data Connect (advanced). Only a single SELECT is permitted; SQL comments are rejected and every FROM/JOIN target must be a Data Connect catalog view (see ise_dc_list_views). Always limit rows (FETCH FIRST n ROWS ONLY).",
+        description="Run a custom read-only SELECT against Data Connect (advanced). Single SELECT only; no SQL comments, db links (@), schema-qualified names, or system packages (DBMS_/UTL_). Every FROM/JOIN target must be a catalog view (ise_dc_list_views). Large event views must be time-bounded on their time column (e.g. \"TIMESTAMP\" >= SYSTIMESTAMP - NUMTODSINTERVAL(7,'DAY')); a row bound is added if missing.",
         inputSchema={"type": "object", "required": ["sql"], "properties": {
-            "sql": {"type": "string", "description": "e.g. SELECT username, COUNT(*) FROM radius_authentications GROUP BY username FETCH FIRST 50 ROWS ONLY"}}},
+            "sql": {"type": "string", "description": "e.g. SELECT username, COUNT(*) FROM radius_authentications WHERE \"TIMESTAMP\" >= SYSTIMESTAMP - NUMTODSINTERVAL(7,'DAY') GROUP BY username FETCH FIRST 50 ROWS ONLY"}}},
     ))
 
     for key in _COMMON_VIEWS:

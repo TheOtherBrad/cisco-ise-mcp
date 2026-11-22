@@ -28,10 +28,13 @@ argument (name, slug, or number). Omit it to use the only/default deployment.
 import asyncio
 import logging
 import os
+import re
+import time
 import uuid
 from typing import Optional
+from urllib.parse import unquote
 
-from mcp.types import Tool
+from mcp.types import Tool, ToolAnnotations
 
 from cisco_ise_mcp import _mcpcompat as compat
 from cisco_ise_mcp import audit, catalog, config, routing
@@ -42,6 +45,44 @@ from cisco_ise_mcp.openapi import (
 )
 from cisco_ise_mcp.monitoring import list_monitoring_tools, handle_monitoring_tool
 from cisco_ise_mcp.dataconnect.tools import list_dataconnect_tools, handle_dataconnect_tool
+
+# Shared non-secret deployment field schema for ise_add_deployment /
+# ise_update_deployment. Defined once (token cost: these two tools were the
+# largest in the listing). Update omits defaults — absent fields are unchanged.
+_DEPLOYMENT_FIELD_PROPS: dict = {
+    "ers_username": {"type": "string", "description": "ERS/Open API admin username."},
+    "ers_port": {"type": "integer", "default": 443, "description": "443 (gateway) or 9060."},
+    "openapi_port": {"type": "integer", "default": 443, "description": "443 (gateway) or 9070."},
+    "verify_ssl": {"type": "boolean", "default": True, "description": "Verify ISE admin TLS. false ONLY for self-signed labs (no MITM protection)."},
+    "ca_cert_path": {"type": "string", "description": "PEM CA bundle for admin TLS; needed for a private ISE CA (httpx trusts only certifi, not the OS/Keychain). '' clears."},
+    "monitoring_enabled": {"type": "boolean", "default": False, "description": "Enable Monitor API (ise_mnt_*); needs 'MnT Admin' group."},
+    "dataconnect_enabled": {"type": "boolean", "default": True},
+    "dataconnect_host": {"type": "string", "description": "MnT node IP/FQDN if not the admin host. '' clears."},
+    "dataconnect_port": {"type": "integer", "default": 2484},
+    "dataconnect_sid": {"type": "string", "default": "cpm10"},
+    "dataconnect_user": {"type": "string", "default": "dataconnect"},
+    "dataconnect_mode": {"type": "string", "enum": ["thin", "thick"], "default": "thin",
+                         "description": "thin = PEM cert, no Oracle client; thick = Instant Client + wallet."},
+    "dataconnect_cert_path": {"type": "string", "description": "Exported Data Connect cert / root CA (PEM). Required if self-signed. '' clears."},
+    "dataconnect_wallet_path": {"type": "string", "description": "Wallet dir (thick, or thin via ewallet.pem)."},
+    "dataconnect_verify_ssl": {"type": "boolean", "default": True},
+    "dataconnect_os_trust": {"type": "boolean", "default": False, "description": "CA-signed cert: trust the OS/default CA store instead of a PEM."},
+    "dataconnect_oracle_client_lib": {"type": "string", "description": "Instant Client dir (thick)."},
+    # Limits: may only tighten the CISCO_ISE_MCP_* environment ceilings.
+    "dc_max_concurrent": {"type": "integer", "description": "Default 5; only tightens CISCO_ISE_MCP_DC_MAX_CONCURRENT."},
+    "dc_query_timeout_s": {"type": "integer", "description": "Default 60; cancelled on the MnT node."},
+    "dc_max_per_minute": {"type": "integer", "description": "Default 30."},
+    "dc_default_days_back": {"type": "integer", "description": "Default 7."},
+    "dc_max_days_back": {"type": "integer", "description": "Default 90."},
+    "dc_default_row_limit": {"type": "integer", "description": "Bound added to ise_dc_query; default 500 (5000 aggregates)."},
+    "dc_max_fact_views": {"type": "integer", "description": "Default 3."},
+    "ers_max_concurrent": {"type": "integer", "description": "Default 10 (of Cisco's 100)."},
+    "openapi_max_concurrent": {"type": "integer", "description": "Default 15 (of Cisco's 150)."},
+    "monitoring_max_concurrent": {"type": "integer", "description": "Default 5."},
+}
+_UPDATE_FIELD_PROPS: dict = {
+    k: {kk: vv for kk, vv in v.items() if kk != "default"} for k, v in _DEPLOYMENT_FIELD_PROPS.items()
+}
 
 _META_TOOLS = [
     Tool(
@@ -85,106 +126,48 @@ _META_TOOLS = [
     Tool(
         name="ise_list_deployments",
         description=(
-            "List every configured ISE deployment with its number, name, slug, host, and whether "
-            "credentials are set. Use the number or name in any tool's 'deployment' argument "
-            "(e.g. 'List RADIUS policy sets on Deployment 1'). Call this to see what is available."
+            "List configured ISE deployments (number, name, slug, host, credential status). Every "
+            "tool's 'deployment' argument accepts a name ('RADIUS Only'), slug ('radius-only') or "
+            "number ('1' / 'Deployment 1'); omit it to use the only/default deployment."
         ),
         inputSchema={"type": "object", "properties": {}},
     ),
     Tool(
         name="ise_add_deployment",
         description=(
-            "Add a new ISE deployment to the registry (non-secret fields only — passwords are NEVER "
-            "passed here). Returns the exact terminal command(s) to set the password(s) afterwards. "
-            "Required: name and host (and ers_username for any ERS/Open API use). Reports every "
-            "missing/invalid field at once.\n"
-            "GUIDED FLOW — before calling, gather the optional surfaces by asking the user (do not "
-            "assume): (1) Is Data Connect reporting needed, or ERS API only? If not needed, set "
-            "dataconnect_enabled=false. (2) If needed: does Data Connect run on the same node as the "
-            "admin host, or a separate Monitoring (MnT) node? If separate, set dataconnect_host. "
-            "(3) Certificate: if the Data Connect cert is SELF-SIGNED, the user must export it and you "
-            "set dataconnect_cert_path to the saved .pem; if it is CA-SIGNED, either set "
-            "dataconnect_os_trust=true (validate against the OS CA store, no file needed) or point "
-            "dataconnect_cert_path at the exported root-CA file. (4) Ask whether to enable the Monitor "
-            "API (MAPI/MnT) via monitoring_enabled — it needs the ERS account in ISE's 'MnT Admin' "
-            "group. Data Connect is always preferred over MAPI for reporting."
+            "Add an ISE deployment (non-secret fields only; passwords are NEVER passed here — the "
+            "result gives the terminal command to set them). Required: name, host (+ ers_username "
+            "for ERS/Open API). Reports every missing/invalid field at once.\n"
+            "GUIDED FLOW — ask the user, don't assume: (1) Data Connect reporting needed? If not, "
+            "dataconnect_enabled=false. (2) Data Connect on a separate MnT node? Set "
+            "dataconnect_host. (3) Data Connect cert SELF-SIGNED: export it, set "
+            "dataconnect_cert_path; CA-SIGNED: dataconnect_os_trust=true or dataconnect_cert_path "
+            "to the root CA. (4) Enable Monitor API via monitoring_enabled? Needs the ERS account "
+            "in ISE's 'MnT Admin' group; Data Connect is preferred for reporting."
         ),
         inputSchema={"type": "object", "required": ["name", "host"], "properties": {
-            "name": {"type": "string", "description": "Descriptive label, e.g. 'RADIUS Only' (not a bare number)."},
-            "host": {"type": "string", "description": "ISE admin-node IP or FQDN, e.g. 10.1.1.1."},
-            "ers_username": {"type": "string", "description": "ERS/Open API admin username for this node."},
-            "ers_port": {"type": "integer", "default": 443, "description": "ERS port (443 gateway, or 9060)."},
-            "openapi_port": {"type": "integer", "default": 443, "description": "Open API port (443 gateway, or 9070)."},
-            "verify_ssl": {"type": "boolean", "default": True, "description": "Verify the ISE admin TLS cert. Keep true; set false ONLY for self-signed labs (disables MITM protection for admin credentials)."},
-            "ca_cert_path": {"type": "string", "description": "Path to a PEM CA bundle to trust for the ERS/Open API/Monitoring (admin) TLS connections. REQUIRED when verify_ssl=true and ISE uses a private/internal CA: httpx trusts only the built-in certifi roots and never reads the OS trust store (macOS Keychain imports do NOT help). Point this at the exported ISE root CA (Base64/PEM). Omit to use the public certifi roots (only works if the admin cert chains to a public CA)."},
-            "monitoring_enabled": {"type": "boolean", "default": False, "description": "Enable the Monitoring API (MAPI / MnT, ise_mnt_*) for this deployment. Opt-in: needs the ERS account in ISE's 'MnT Admin' admin group. Prefer Data Connect for reporting."},
-            "dataconnect_enabled": {"type": "boolean", "default": True, "description": "Enable Data Connect (reporting DB) for this deployment."},
-            "dataconnect_host": {"type": "string", "description": "Data Connect (MnT/Monitoring node) IP or FQDN. Defaults to the admin host if omitted — set it when the MnT persona runs on a different node than the primary Admin node."},
-            "dataconnect_port": {"type": "integer", "default": 2484},
-            "dataconnect_sid": {"type": "string", "default": "cpm10"},
-            "dataconnect_user": {"type": "string", "default": "dataconnect"},
-            "dataconnect_mode": {"type": "string", "enum": ["thin", "thick"], "default": "thin",
-                                 "description": "thin = no Oracle client (PEM cert); thick = Instant Client + wallet."},
-            "dataconnect_cert_path": {"type": "string", "description": "Path to THIS deployment's exported Data Connect certificate (PEM). Required for a SELF-SIGNED cert; for a CA-signed cert use this for a root-CA file OR set dataconnect_os_trust instead."},
-            "dataconnect_wallet_path": {"type": "string", "description": "Wallet directory (thick mode, or thin via ewallet.pem)."},
-            "dataconnect_verify_ssl": {"type": "boolean", "default": True},
-            "dataconnect_os_trust": {"type": "boolean", "default": False, "description": "CA-signed Data Connect cert: validate the chain against the OS/default CA trust store instead of a downloaded PEM (no cert_path needed). Leave false for a self-signed cert. macOS reads the OpenSSL/certifi bundle, not the Keychain."},
-            "dataconnect_oracle_client_lib": {"type": "string", "description": "Optional Oracle Instant Client dir (thick mode)."},
+            "name": {"type": "string", "description": "Descriptive label, e.g. 'RADIUS Only'."},
+            "host": {"type": "string", "description": "ISE admin-node IP or FQDN."},
+            **_DEPLOYMENT_FIELD_PROPS,
             "make_default": {"type": "boolean", "description": "Make this the default deployment."},
-            "dc_max_concurrent": {"type": "integer", "description": "Max simultaneous Data Connect queries for this deployment (default 5). May only tighten the CISCO_ISE_MCP_DC_MAX_CONCURRENT ceiling."},
-            "dc_query_timeout_s": {"type": "integer", "description": "Seconds a single Data Connect query may run before it is cancelled ON the MnT node (default 60)."},
-            "dc_max_per_minute": {"type": "integer", "description": "Sustained Data Connect queries per minute (default 30). Bounds a runaway loop that a concurrency cap alone misses."},
-            "dc_default_days_back": {"type": "integer", "description": "Time window applied when a view query omits days_back (default 7)."},
-            "dc_max_days_back": {"type": "integer", "description": "Largest days_back allowed (default 90). Larger requests are reduced to this, not rejected."},
-            "dc_default_row_limit": {"type": "integer", "description": "Row bound injected into ise_dc_query when it has none (default 500; 5000 for aggregates)."},
-            "dc_max_fact_views": {"type": "integer", "description": "Max large event views joinable in one ise_dc_query (default 3). Small lookup views are exempt."},
-            "ers_max_concurrent": {"type": "integer", "description": "Max simultaneous ERS calls (default 10, of Cisco's deployment-wide 100)."},
-            "openapi_max_concurrent": {"type": "integer", "description": "Max simultaneous Open API calls (default 15, of Cisco's deployment-wide 150)."},
-            "monitoring_max_concurrent": {"type": "integer", "description": "Max simultaneous MnT calls (default 5)."},}},
+        }},
     ),
     Tool(
         name="ise_update_deployment",
         description=(
-            "Modify an EXISTING deployment's non-secret settings — use this to fix a typo (e.g. wrong "
-            "host) or add information later (e.g. enable Data Connect and set its certificate). Only the "
-            "fields you pass change; everything else (including stored passwords) is preserved. Renaming "
-            "to a name with a DIFFERENT slug changes the deployment's identity and moves its stored "
-            "credentials, so it requires reslug=true; otherwise the rename is rejected with guidance. "
-            "Passwords are NEVER set here (use the terminal: uv run cisco-ise-mcp set-credential <name>). "
-            "Reports any remaining gaps."
+            "Change an EXISTING deployment's non-secret settings (e.g. fix the host, enable Data "
+            "Connect). Only passed fields change; stored passwords are kept. A rename that changes "
+            "the slug moves stored credentials and needs reslug=true. Passwords are NEVER set here "
+            "(terminal: uv run cisco-ise-mcp set-credential <name>). Pass '' to clear a path/host. "
+            "Field meanings: see ise_add_deployment."
         ),
         inputSchema={"type": "object", "required": ["deployment"], "properties": {
-            "deployment": {"type": "string", "description": "Name, slug, or number of the deployment to modify."},
-            "name": {"type": "string", "description": "New descriptive label. If its slug differs from the current one, also pass reslug=true."},
-            "reslug": {"type": "boolean", "default": False, "description": "Authorize a slug (identity) change when renaming; migrates stored credentials. Required for renames that change the slug."},
-            "host": {"type": "string", "description": "New ISE admin-node IP or FQDN."},
-            "ers_username": {"type": "string", "description": "ERS/Open API admin username."},
-            "ers_port": {"type": "integer", "description": "ERS port (443 gateway, or 9060)."},
-            "openapi_port": {"type": "integer", "description": "Open API port (443 gateway, or 9070)."},
-            "verify_ssl": {"type": "boolean", "description": "Verify the ISE admin TLS cert."},
-            "ca_cert_path": {"type": "string", "description": "PEM CA bundle to trust for ERS/Open API/Monitoring TLS (private ISE CA). Needed when verify_ssl=true and ISE uses an internal CA — httpx trusts only certifi, not the OS/Keychain store. Pass '' to clear and fall back to certifi."},
-            "monitoring_enabled": {"type": "boolean", "description": "Enable/disable the Monitoring API (MAPI / MnT) for this deployment. Needs the ERS account in ISE's 'MnT Admin' group."},
-            "dataconnect_enabled": {"type": "boolean", "description": "Enable/disable Data Connect for this deployment."},
-            "dataconnect_host": {"type": "string", "description": "Data Connect (MnT/Monitoring node) IP or FQDN. Pass '' to clear and fall back to the admin host."},
-            "dataconnect_port": {"type": "integer"},
-            "dataconnect_sid": {"type": "string"},
-            "dataconnect_user": {"type": "string"},
-            "dataconnect_mode": {"type": "string", "enum": ["thin", "thick"]},
-            "dataconnect_cert_path": {"type": "string", "description": "Path to THIS deployment's Data Connect certificate (PEM). Pass '' to clear (e.g. when switching to os_trust)."},
-            "dataconnect_wallet_path": {"type": "string"},
-            "dataconnect_verify_ssl": {"type": "boolean"},
-            "dataconnect_os_trust": {"type": "boolean", "description": "CA-signed Data Connect cert: validate against the OS/default CA store instead of a PEM (no cert_path needed). False for self-signed."},
-            "dataconnect_oracle_client_lib": {"type": "string"},
-            "dc_max_concurrent": {"type": "integer", "description": "Max simultaneous Data Connect queries for this deployment (default 5). May only tighten the CISCO_ISE_MCP_DC_MAX_CONCURRENT ceiling."},
-            "dc_query_timeout_s": {"type": "integer", "description": "Seconds a single Data Connect query may run before it is cancelled ON the MnT node (default 60)."},
-            "dc_max_per_minute": {"type": "integer", "description": "Sustained Data Connect queries per minute (default 30). Bounds a runaway loop that a concurrency cap alone misses."},
-            "dc_default_days_back": {"type": "integer", "description": "Time window applied when a view query omits days_back (default 7)."},
-            "dc_max_days_back": {"type": "integer", "description": "Largest days_back allowed (default 90). Larger requests are reduced to this, not rejected."},
-            "dc_default_row_limit": {"type": "integer", "description": "Row bound injected into ise_dc_query when it has none (default 500; 5000 for aggregates)."},
-            "dc_max_fact_views": {"type": "integer", "description": "Max large event views joinable in one ise_dc_query (default 3). Small lookup views are exempt."},
-            "ers_max_concurrent": {"type": "integer", "description": "Max simultaneous ERS calls (default 10, of Cisco's deployment-wide 100)."},
-            "openapi_max_concurrent": {"type": "integer", "description": "Max simultaneous Open API calls (default 15, of Cisco's deployment-wide 150)."},
-            "monitoring_max_concurrent": {"type": "integer", "description": "Max simultaneous MnT calls (default 5)."},}},
+            "deployment": {"type": "string", "description": "Deployment to modify (name, slug or number)."},
+            "name": {"type": "string", "description": "New label; if its slug changes also pass reslug=true."},
+            "reslug": {"type": "boolean", "default": False, "description": "Allow a slug change on rename (migrates credentials)."},
+            "host": {"type": "string"},
+            **_UPDATE_FIELD_PROPS,
+        }},
     ),
     Tool(
         name="ise_remove_deployment",
@@ -232,11 +215,7 @@ _META_NAMES = {t.name for t in _META_TOOLS}
 _CONFIRM_PROP = {
     "type": "boolean",
     "default": False,
-    "description": (
-        "Required for this DESTRUCTIVE operation: must be true to execute. The server "
-        "additionally requires an operator to enable destructive tools "
-        "(CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1); without it the call is refused regardless."
-    ),
+    "description": "Must be true. Also requires operator env CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1.",
 }
 
 
@@ -254,6 +233,63 @@ def _mark_destructive(tool: Tool) -> Tool:
     return Tool(name=tool.name, description=desc, inputSchema={**schema, "properties": props})
 
 
+# ---------------------------------------------------------------------------
+# Tool annotations — MCP behavioural hints for clients (auto-approve
+# reads, prompt on destructive calls). They are HINTS only: the server-side
+# gates (_destructive_gate, blocklist, validation) remain the real control.
+# ---------------------------------------------------------------------------
+_READ_ONLY_META = {
+    "ise_capabilities", "ise_route", "ise_catalog_info", "ise_catalog_diff",
+    "ise_list_deployments", "ise_limits_status", "ise_test_deployment",
+}
+_PASSTHROUGHS = {"ise_ers_request", "ise_openapi_request", "ise_mnt_request"}
+
+
+def _tool_http_method(name: str) -> Optional[str]:
+    """HTTP method of a fixed (catalog/typed) tool, or None if not fixed."""
+    if name in _PASSTHROUGHS:
+        return None
+    if name.startswith("ise_ers_"):
+        action = name[len("ise_ers_"):].split("_", 1)[0]
+        return {"resources": "GET", "list": "GET", "get": "GET", "search": "GET",
+                "create": "POST", "update": "PUT", "patch": "PATCH",
+                "delete": "DELETE"}.get(action)
+    if name.startswith("ise_openapi_"):
+        entry = catalog.get_openapi_index().get(name[len("ise_openapi_"):])
+        return (entry or {}).get("method", "").upper() or None
+    if name.startswith("ise_mnt_"):
+        entry = catalog.get_monitoring_index().get(name[len("ise_mnt_"):])
+        return (entry or {}).get("method", "").upper() or None
+    return None
+
+
+def _annotations_for(name: str) -> dict:
+    """camelCase annotation dict (accepted by ``Tool`` on mcp v1 and v2)."""
+    # ise_remove_deployment is not ISE-destructive (no server gate), but it
+    # deletes stored credentials locally — clients should still prompt for it.
+    destructive = _maybe_destructive(name) or name == "ise_remove_deployment"
+    if name.startswith("ise_dc_") or name in _READ_ONLY_META:
+        read_only = True
+    elif name in _PASSTHROUGHS or destructive:
+        read_only = False
+    else:
+        read_only = _tool_http_method(name) == "GET"
+    ann: dict = {"readOnlyHint": read_only,
+                 # Only catalog_diff reaches beyond the configured ISE (Cisco DevNet).
+                 "openWorldHint": name == "ise_catalog_diff"}
+    if not read_only:
+        ann["destructiveHint"] = destructive
+        ann["idempotentHint"] = _tool_http_method(name) in ("PUT", "DELETE")
+    return ann
+
+
+def _annotate(tool: Tool) -> Tool:
+    # model_copy(update=) skips validation, so build the typed model explicitly;
+    # model_validate accepts the camelCase wire names on both SDK majors.
+    ann = ToolAnnotations.model_validate(_annotations_for(tool.name))
+    return tool.model_copy(update={"annotations": ann})
+
+
 def all_tools() -> list[Tool]:
     """Every tool this server exposes — SDK-agnostic; reused by scripts/validate.py."""
     tools: list[Tool] = []
@@ -262,14 +298,101 @@ def all_tools() -> list[Tool]:
     tools.extend(list_openapi_tools())
     tools.extend(list_monitoring_tools())
     tools.extend(list_dataconnect_tools())
-    return [_mark_destructive(t) for t in tools]
+    return [_annotate(_mark_destructive(t)) for t in tools]
 
 
 async def _list_tools() -> list[Tool]:
-    return all_tools()
+    return visible_tools()
+
+
+# ---------------------------------------------------------------------------
+# Read-only default
+#
+# Unless an operator sets CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1, the server is
+# READ-ONLY: no ISE create/update/delete and no registry add/update/remove.
+# Write-capable tools are not advertised in tools/list (the environment is fixed
+# for the process lifetime, so the list is stable) and are refused at runtime if
+# called anyway. CISCO_ISE_MCP_BLOCKED_TOOLS entries are never advertised.
+# ---------------------------------------------------------------------------
+# Registry tools that change deployments.json. ise_set_default_deployment only
+# selects a default and stays available in read-only mode.
+_REGISTRY_WRITE_TOOLS = {"ise_add_deployment", "ise_update_deployment", "ise_remove_deployment"}
+
+
+def _is_write_tool(name: str) -> bool:
+    """Static: can this tool (by name) change ISE or the registry?
+
+    Passthroughs are NOT write tools by name — they stay available read-only
+    with their method restricted to GET; their calls are classified at runtime.
+    """
+    if name in _REGISTRY_WRITE_TOOLS:
+        return True
+    if name in _PASSTHROUGHS or name in _META_NAMES:
+        return False
+    if name.startswith("ise_dc_"):
+        return False
+    if _maybe_destructive(name):
+        return True
+    method = _tool_http_method(name)
+    return method is not None and method != "GET"
+
+
+def _is_write_call(name: str, arguments: dict) -> bool:
+    """Runtime: does THIS call change state (any surface)?"""
+    if _is_write_tool(name):
+        return True
+    if name in _PASSTHROUGHS:
+        if str(arguments.get("method", "GET")).upper() != "GET":
+            return True
+        return _is_destructive(name, arguments)  # e.g. MnT GET .../CoA/...
+    return False
+
+
+def _read_only_refusal(name: str) -> dict:
+    return {
+        "error": "read_only_mode",
+        "tool": name,
+        "reason": ("This MCP server is in read-only mode (the default). Create, update and "
+                   "delete operations are disabled. An operator can enable them by setting "
+                   "CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1 in the server environment and "
+                   "restarting the MCP client. No changes were made."),
+    }
+
+
+def _read_only_variant(tool: Tool) -> Tool:
+    """Passthrough as advertised in read-only mode: method limited to GET."""
+    schema = compat.tool_input_schema(tool)
+    props = dict(schema.get("properties", {}))
+    props["method"] = {**props.get("method", {"type": "string"}), "enum": ["GET"]}
+    props.pop("confirm", None)  # no destructive call is possible in read-only mode
+    desc = (tool.description or "").replace("[DESTRUCTIVE] ", "")
+    desc += " (Read-only mode: GET only.)"
+    ann = ToolAnnotations.model_validate({"readOnlyHint": True, "openWorldHint": False})
+    # Build a new Tool (inputSchema kwarg works on both SDK majors; model_copy
+    # would need the major-specific field name).
+    return Tool(name=tool.name, description=desc,
+                inputSchema={**schema, "properties": props}, annotations=ann)
+
+
+def visible_tools() -> list[Tool]:
+    """Tools advertised to the client under the current environment."""
+    blocked = _blocked_tools()
+    writes = _destructive_allowed()
+    out: list[Tool] = []
+    for t in all_tools():
+        if t.name in blocked:
+            continue
+        if not writes:
+            if _is_write_tool(t.name):
+                continue
+            if t.name in _PASSTHROUGHS:
+                t = _read_only_variant(t)
+        out.append(t)
+    return out
 
 
 _text = compat.text_result
+_err = compat.error_result
 
 
 # ---------------------------------------------------------------------------
@@ -303,6 +426,24 @@ def _error_payload(exc: Exception) -> dict:
             "type": type(exc).__name__,
         }
     return {"error": str(exc), "type": type(exc).__name__}
+
+
+def _flag(value, default: bool = False) -> bool:
+    """Strictly interpret a boolean tool argument.
+
+    ``bool("false")`` is True in Python, and the mcp 2.x low-level server does not
+    validate arguments against the input schema — so a string ``"false"`` must
+    never be read as consent. Only JSON ``true`` or an explicit truthy string
+    counts; any other value (``"false"``, ``"0"``, ``""``, ``1.5``, ...) is False.
+    ``None`` (argument omitted) yields ``default``.
+    """
+    if value is None:
+        return default
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in _TRUTHY
+    return False
 
 
 _ADD_FIELDS = {
@@ -371,7 +512,7 @@ async def _test_deployment(arguments: dict) -> dict:
     """Offline validation always; live probe only when config is complete and probe!=false."""
     selector = arguments.get("deployment")
     result = config.validate_deployment(selector)
-    if result.get("ok") and arguments.get("probe", True):
+    if result.get("ok") and _flag(arguments.get("probe"), default=True):
         result["probe"] = await _probe_deployment(result["slug"])
     elif not result.get("ok"):
         result["probe"] = {"skipped": "Fix the missing fields/credentials above before probing."}
@@ -415,10 +556,10 @@ async def _handle_meta(name: str, arguments: dict) -> compat.ToolResult:
         kwargs = {k: v for k, v in arguments.items() if k in _UPDATE_FIELDS}
         return _text(config.update_deployment(
             arguments.get("deployment", ""),
-            reslug=bool(arguments.get("reslug", False)), **kwargs))
+            reslug=_flag(arguments.get("reslug")), **kwargs))
     if name == "ise_remove_deployment":
         return _text(config.remove_deployment(
-            arguments.get("deployment", ""), confirm=bool(arguments.get("confirm", False))))
+            arguments.get("deployment", ""), confirm=_flag(arguments.get("confirm"))))
     if name == "ise_set_default_deployment":
         return _text(config.set_default(arguments.get("deployment", "")))
     if name == "ise_test_deployment":
@@ -479,8 +620,9 @@ def _is_mutating(name: str, arguments: dict) -> bool:
         entry = catalog.get_openapi_index().get(key)
         return bool(entry) and entry.get("method", "GET").upper() in _MUTATING_METHODS
     if name.startswith("ise_mnt_"):
-        # The only state-changing MnT tools delete session records.
-        return "delete" in name
+        # State-changing MnT calls: session-record deletes and CoA (reauth /
+        # disconnect) — CoA is a GET in the MnT API, so classify by name/path.
+        return _is_destructive(name, arguments)
     # ise_dc_* is read-only (SELECT only); nothing else mutates.
     return False
 
@@ -500,9 +642,33 @@ def _is_mutating(name: str, arguments: dict) -> bool:
 # only edits the local registry, not ISE).
 # ---------------------------------------------------------------------------
 
-# Open API POST tools that are destructive despite not using the DELETE method.
-_DESTRUCTIVE_OPENAPI_POST = {"patch_rollback", "hotpatch_rollback", "backup_restore"}
+# Open API POST tools that are destructive / service-impacting despite not using
+# the DELETE method: rollbacks and restores replace state; patch/hot-patch
+# installs restart application services (node outage); certificate imports can
+# restart services when the cert is bound to Admin/EAP/portal roles.
+_DESTRUCTIVE_OPENAPI_POST = {
+    "patch_rollback", "hotpatch_rollback", "backup_restore",
+    "patch_install", "hotpatch_install", "cert_system_import", "cert_trusted_import",
+}
+# The same operations reached through the raw ise_openapi_request passthrough
+# (matched against the lower-cased, percent-decoded path for any non-GET method).
+_DESTRUCTIVE_OPENAPI_PATH = re.compile(
+    r"/(?:hot)?patch/(?:install|rollback)\b"
+    r"|/backup-restore/.*restore\b"
+    r"|/certs/[^?#]*/import\b"
+    r"|/reset\b"
+)
+# MnT operations that disconnect/re-authenticate live sessions or delete session
+# records. CoA is a GET in the MnT API, so these are matched by PATH, any method.
+_DESTRUCTIVE_MNT_TOOLS = {"coa_reauth", "coa_disconnect"}
+_DESTRUCTIVE_MNT_PATH = re.compile(r"/coa/|/session/delete/")
 _TRUTHY = {"1", "true", "yes", "on"}
+
+
+def _norm_path(path) -> str:
+    """Lower-cased, percent-decoded, slash-prefixed path for classification only."""
+    p = unquote(str(path or "")).strip().lower()
+    return p if p.startswith("/") else "/" + p
 
 
 def _is_destructive(name: str, arguments: dict) -> bool:
@@ -514,7 +680,11 @@ def _is_destructive(name: str, arguments: dict) -> bool:
         return action.split("_", 1)[0] == "delete"
     if name.startswith("ise_openapi_"):
         if name == "ise_openapi_request":
-            return str(arguments.get("method", "")).upper() == "DELETE"
+            method = str(arguments.get("method", "")).upper()
+            if method == "DELETE":
+                return True
+            return method != "GET" and bool(
+                _DESTRUCTIVE_OPENAPI_PATH.search(_norm_path(arguments.get("path"))))
         key = name[len("ise_openapi_"):]
         if key in _DESTRUCTIVE_OPENAPI_POST:
             return True
@@ -522,8 +692,11 @@ def _is_destructive(name: str, arguments: dict) -> bool:
         return bool(entry) and entry.get("method", "GET").upper() == "DELETE"
     if name.startswith("ise_mnt_"):
         if name == "ise_mnt_request":
-            return str(arguments.get("method", "")).upper() == "DELETE"
-        return "delete" in name or name == "ise_mnt_coa_disconnect"
+            if str(arguments.get("method", "")).upper() == "DELETE":
+                return True
+            return bool(_DESTRUCTIVE_MNT_PATH.search(_norm_path(arguments.get("path"))))
+        key = name[len("ise_mnt_"):]
+        return "delete" in key or key in _DESTRUCTIVE_MNT_TOOLS
     return False
 
 
@@ -545,7 +718,8 @@ def _maybe_destructive(name: str) -> bool:
         entry = catalog.get_openapi_index().get(key)
         return bool(entry) and entry.get("method", "GET").upper() == "DELETE"
     if name.startswith("ise_mnt_"):
-        return "delete" in name or name == "ise_mnt_coa_disconnect"
+        key = name[len("ise_mnt_"):]
+        return "delete" in key or key in _DESTRUCTIVE_MNT_TOOLS
     return False
 
 
@@ -558,15 +732,19 @@ def _blocked_tools() -> set:
     return {t.strip() for t in raw.split(",") if t.strip()}
 
 
+def _blocked_refusal(name: str) -> dict:
+    return {
+        "error": "disabled_by_policy",
+        "tool": name,
+        "reason": (f"'{name}' is blocked by the CISCO_ISE_MCP_BLOCKED_TOOLS policy. "
+                   f"Perform this action directly in the ISE administration GUI."),
+    }
+
+
 def _destructive_gate(name: str, arguments: dict) -> dict:
     """Return a refusal payload if the call must NOT proceed, else {} to allow."""
     if name in _blocked_tools():
-        return {
-            "error": "disabled_by_policy",
-            "tool": name,
-            "reason": (f"'{name}' is blocked by the CISCO_ISE_MCP_BLOCKED_TOOLS policy. "
-                       f"Perform this action directly in the ISE administration GUI."),
-        }
+        return _blocked_refusal(name)
     if not _destructive_allowed():
         return {
             "error": "destructive_disabled",
@@ -576,7 +754,7 @@ def _destructive_gate(name: str, arguments: dict) -> dict:
                        "(confirm=true is still required on every such call). No changes were made."),
             "would_run": {"tool": name, "deployment": arguments.get("deployment")},
         }
-    if not bool(arguments.get("confirm", False)):
+    if not _flag(arguments.get("confirm")):
         return {
             "error": "confirmation_required",
             "tool": name,
@@ -587,20 +765,121 @@ def _destructive_gate(name: str, arguments: dict) -> dict:
     return {}
 
 
+# ---------------------------------------------------------------------------
+# Argument validation
+#
+# The mcp 1.x low-level server validates arguments against each tool's
+# inputSchema; the 2.x low-level server advertises the schema but never applies
+# it. Validate here, in SDK-neutral code, so both majors enforce the same
+# contract before any gate or dispatch (MCP spec: servers MUST validate inputs).
+# Kill-switch: CISCO_ISE_MCP_VALIDATE_ARGS=0.
+# ---------------------------------------------------------------------------
+_VALIDATORS: Optional[dict] = None
+_MAX_VALIDATION_ERRORS = 5
+
+
+def _validators() -> dict:
+    global _VALIDATORS
+    if _VALIDATORS is None:
+        from jsonschema import Draft202012Validator
+        _VALIDATORS = {t.name: Draft202012Validator(compat.tool_input_schema(t))
+                       for t in all_tools()}
+    return _VALIDATORS
+
+
+def _normalize_arguments(arguments: dict) -> dict:
+    """Lossless coercions that keep documented usage working.
+
+    ``deployment`` accepts a number ("1" or 1); the schema types it as string,
+    so an integer selector is converted rather than rejected.
+    """
+    dep = arguments.get("deployment")
+    if isinstance(dep, int) and not isinstance(dep, bool):
+        return {**arguments, "deployment": str(dep)}
+    return arguments
+
+
+def _validate_arguments(name: str, arguments: dict) -> Optional[dict]:
+    """Return an ``invalid_arguments`` refusal, or None when the call is valid."""
+    if os.environ.get("CISCO_ISE_MCP_VALIDATE_ARGS", "1").strip().lower() in {"0", "false", "no", "off"}:
+        return None
+    validator = _validators().get(name)
+    if validator is None:
+        return None  # unknown tool: reported by dispatch
+    errors = sorted(validator.iter_errors(arguments), key=lambda e: list(e.absolute_path))
+    if not errors:
+        return None
+    details = []
+    for err in errors[:_MAX_VALIDATION_ERRORS]:
+        where = "/".join(str(p) for p in err.absolute_path) or "(arguments)"
+        # Never echo argument VALUES back (could be large or sensitive); report
+        # the location and the failing rule only.
+        details.append(f"{where}: failed '{err.validator}' ({str(err.validator_value)[:80]})")
+    return {
+        "error": "invalid_arguments",
+        "tool": name,
+        "details": details,
+        "hint": "Fix the listed arguments to match the tool's input schema and retry.",
+    }
+
+
+def _access_class(name: str, arguments: dict, destructive: bool, mutating: bool) -> str:
+    """Audit category: destructive / registry / write / read."""
+    if destructive:
+        return "destructive"
+    if name in _MUTATING_META:
+        return "registry"
+    if mutating or _is_write_call(name, arguments):
+        return "write"
+    return "read"
+
+
 async def call_tool(name: str, arguments: dict) -> compat.ToolResult:
+    """Validate, gate, dispatch and AUDIT one tool call.
+
+    Every call produces exactly one final audit line (status ok / error /
+    denied) naming the tool, its access class and duration; state-changing calls
+    additionally get an ``attempt`` line before they execute (D2).
+    """
+    started = time.monotonic()
+    arguments = _normalize_arguments(arguments or {})
+    dep = arguments.get("deployment")
+
+    def _audit(status: str, access: str, error: Optional[str] = None) -> None:
+        audit.record(name, arguments, deployment=dep, status=status, access=access,
+                     error=error, duration_ms=int((time.monotonic() - started) * 1000))
+
+    invalid = _validate_arguments(name, arguments)
+    if invalid:
+        _audit("denied", "unknown", "invalid_arguments")
+        return _err(invalid)
+
     destructive = _is_destructive(name, arguments)
     mutating = _is_mutating(name, arguments) or destructive
-    dep = arguments.get("deployment")
+    access = _access_class(name, arguments, destructive, mutating)
+
+    # Operator blocklist applies to EVERY tool (read or write) and is checked
+    # first, before classification or dispatch.
+    if name in _blocked_tools():
+        refusal = _blocked_refusal(name)
+        _audit("denied", access, refusal["error"])
+        return _err(refusal)
+
+    # Read-only default: no state change of any kind unless enabled.
+    if not _destructive_allowed() and _is_write_call(name, arguments):
+        refusal = _read_only_refusal(name)
+        _audit("denied", access, refusal["error"])
+        return _err(refusal)
 
     # Gate destructive ISE operations BEFORE any dispatch (Finding #3).
     if destructive:
         refusal = _destructive_gate(name, arguments)
         if refusal:
-            audit.record(name, arguments, deployment=dep,
-                         status="denied", error=refusal.get("error"))
-            return _text(refusal)
-        # Passed the gate — record the ATTEMPT before executing (pre + post audit).
-        audit.record(name, arguments, deployment=dep, status="attempt")
+            _audit("denied", access, refusal.get("error"))
+            return _err(refusal)
+    if access != "read":
+        # Record the ATTEMPT before a state change executes (pre + post audit).
+        _audit("attempt", access)
 
     try:
         if name in _META_NAMES:
@@ -614,31 +893,47 @@ async def call_tool(name: str, arguments: dict) -> compat.ToolResult:
         elif name.startswith("ise_dc_"):
             result = await handle_dataconnect_tool(name, arguments)
         else:
-            return _text({"error": f"Unknown tool: {name}"})
-        if mutating:
-            audit.record(name, arguments, deployment=dep, status="ok")
+            _audit("denied", access, "unknown_tool")
+            return _err({"error": f"Unknown tool: {name}"})
+        _audit("ok", access)
         return result
     except LimitExceeded as e:
         # A resource limit refused the call. Return its structured payload — the
         # agent gets actionable guidance ("narrow the query") instead of a stack
         # trace, in the same shape as the destructive-tool refusal above.
-        if mutating:
-            audit.record(name, arguments, deployment=dep,
-                         status="denied", error=e.payload.get("error"))
-        return _text({**e.payload, "tool": name})
+        _audit("denied", access, e.payload.get("error"))
+        return _err({**e.payload, "tool": name})
     except Exception as e:  # noqa: BLE001 — surface errors to the agent as a result
-        if mutating:
-            audit.record(name, arguments, deployment=dep,
-                         status="error", error=f"{type(e).__name__}: {e}")
-        return _text(_error_payload(e))
+        _audit("error", access, f"{type(e).__name__}: {e}")
+        return _err(_error_payload(e))
 
 
-server = compat.make_server("cisco-ise-mcp", "1.0.0", _list_tools, call_tool)
+server = compat.make_server("cisco-ise-mcp", "1.1.0", _list_tools, call_tool)
+
+
+def _configure_logging() -> None:
+    """Send server logs to STDERR so security/limit warnings are not lost.
+
+    stdout carries the stdio JSON-RPC stream and must never receive log output.
+    Level from CISCO_ISE_MCP_LOG_LEVEL (default WARNING). Respects a logging
+    configuration the host already installed (``basicConfig`` is a no-op then).
+    """
+    import sys
+    raw = os.environ.get("CISCO_ISE_MCP_LOG_LEVEL", "WARNING").strip().upper()
+    level = getattr(logging, raw, None)
+    if not isinstance(level, int):
+        level = logging.WARNING
+    logging.basicConfig(
+        stream=sys.stderr, level=level,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+    )
 
 
 def main():
     """Console-script entry point (synchronous wrapper)."""
+    _configure_logging()
     config.ensure_registry()
+    audit.startup()
     asyncio.run(compat.serve(server))
 
 

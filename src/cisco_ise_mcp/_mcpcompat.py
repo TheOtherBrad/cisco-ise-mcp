@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import json
+import os
 from dataclasses import dataclass
 from typing import Any, Awaitable, Callable
 
@@ -52,15 +53,23 @@ MCP_MAJOR = _detect_major()
 @dataclass
 class ToolResult:
     """SDK-neutral tool result. ``data`` is a raw Python object (usually a dict
-    or list); ``text`` overrides the default JSON rendering when set."""
+    or list); ``text`` overrides the default JSON rendering when set.
+    ``is_error`` marks a failed or refused call so the client/model can tell it
+    apart from a successful result (MCP ``CallToolResult.isError``)."""
 
     data: Any
     text: str | None = None
+    is_error: bool = False
 
 
 def text_result(obj: Any) -> "ToolResult":
     """Wrap a raw Python result — the one helper the surface handlers call."""
     return ToolResult(data=obj)
+
+
+def error_result(obj: Any) -> "ToolResult":
+    """Wrap a refusal / error payload; rendered with ``isError: true``."""
+    return ToolResult(data=obj, is_error=True)
 
 
 def tool_input_schema(tool: Tool) -> dict:
@@ -78,26 +87,52 @@ def tool_input_schema(tool: Tool) -> dict:
 # --- boundary converters ---------------------------------------------------
 
 def _content(result: "ToolResult") -> list:
-    """Neutral result → the ``[TextContent(...)]`` parity output used on both."""
+    """Neutral result → the ``[TextContent(...)]`` parity output used on both.
+
+    Compact separators: the text block is read by the model, and pretty-print
+    indentation only spends tokens (20-35% of a typical payload) without adding
+    information. Non-ASCII is kept as-is rather than escaped to ``\\uXXXX``.
+    """
     text = result.text
     if text is None:
-        text = json.dumps(result.data, indent=2, default=str)
+        text = json.dumps(result.data, separators=(",", ":"), ensure_ascii=False, default=str)
     return [TextContent(type="text", text=text)]
+
+
+def _structured_enabled() -> bool:
+    """``structured_content`` is opt-in (``CISCO_ISE_MCP_STRUCTURED=1``).
+
+    No tool declares an ``outputSchema``, so the structured channel carries no
+    contract — it is the same payload as the text block, and clients that
+    forward both to the model pay for it twice. Operators whose client consumes
+    ``structuredContent`` can turn it back on.
+    """
+    return os.environ.get("CISCO_ISE_MCP_STRUCTURED", "").strip().lower() in {"1", "true", "yes", "on"}
 
 
 def to_call_result(result: "ToolResult"):
     """Neutral result → the SDK-native ``call_tool`` return value.
 
-    v1 returns ``list[TextContent]`` (text only). v2 returns a
-    ``CallToolResult`` that additionally carries ``structured_content`` (a
-    machine-readable payload) whenever the result data is a dict.
+    v1 returns ``list[TextContent]`` (text only) for successful results. v2
+    returns a ``CallToolResult``; it carries ``structured_content`` (dict
+    results only) when ``CISCO_ISE_MCP_STRUCTURED=1``. Error results are a
+    ``CallToolResult(isError=True)`` on both majors (v1's low-level server
+    passes a returned ``CallToolResult`` through unchanged). The camelCase
+    ``isError`` alias is accepted by both.
     """
     content = _content(result)
     if MCP_MAJOR >= 2:
         from mcp.types import CallToolResult
 
-        structured = result.data if isinstance(result.data, dict) else None
+        structured = (result.data if isinstance(result.data, dict) and _structured_enabled()
+                      else None)
+        if result.is_error:
+            return CallToolResult(content=content, structured_content=structured, isError=True)
         return CallToolResult(content=content, structured_content=structured)
+    if result.is_error:
+        from mcp.types import CallToolResult
+
+        return CallToolResult(content=content, isError=True)
     return content
 
 

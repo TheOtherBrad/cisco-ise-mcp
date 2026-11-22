@@ -92,10 +92,11 @@ def test_audit_record_redacts_and_appends(cfg, tmp_path, monkeypatch):
     from cisco_ise_mcp import audit
     audit.record("ise_ers_create", {"resource": "endpoint", "data": {"mac": "x"}},
                  deployment="prod", status="ok")
-    import json
-    line = json.loads((tmp_path / "audit.log").read_text().splitlines()[0])
-    assert line["action"] == "ise_ers_create"
-    assert line["arguments"]["data"] == "<redacted>"
+    from conftest import read_audit
+    line = read_audit(tmp_path)[0]
+    assert line["tool"] == "ise_ers_create"
+    # Since v1.1.0 bodies are logged (sanitized) so WHAT changed is recorded.
+    assert line["arguments"]["data"] == {"mac": "x"}
     assert line["deployment"] == "prod"
 
 

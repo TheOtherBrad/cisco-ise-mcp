@@ -43,7 +43,17 @@ from cisco_ise_mcp import _mcpcompat as compat
 logger = logging.getLogger(__name__)
 
 
-def admin_tls_verify(verify_ssl: bool, ca_cert_path: str = "") -> Union[bool, str]:
+def _harden(ctx: ssl.SSLContext) -> ssl.SSLContext:
+    """Apply the TLS floor shared by every verified admin connection.
+
+    TLS 1.0/1.1 are refused (CodeGuard digital-certificates / NIST SP 800-52r2);
+    ISE 3.x admin and Data Connect listeners support TLS 1.2+.
+    """
+    ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+    return ctx
+
+
+def admin_tls_verify(verify_ssl: bool, ca_cert_path: str = "") -> Union[bool, ssl.SSLContext]:
     """Resolve the ``verify=`` value for the ERS/Open API/Monitoring httpx clients.
 
     httpx treats ``verify=True`` as "trust only the certifi bundle" — it never
@@ -53,12 +63,12 @@ def admin_tls_verify(verify_ssl: bool, ca_cert_path: str = "") -> Union[bool, st
 
     Returns one of:
       * ``False`` — verification disabled (verify_ssl is off; lab only).
-      * a filesystem path (str) — trust anchor is the operator-supplied CA PEM.
-        httpx builds an SSLContext from it with certificate AND hostname
-        checking left ON (``ssl.create_default_context(cafile=path)``), so the
-        server's leaf SAN must match the dialed host. Full chain validation is
-        preserved — this only *adds* the private root as a trust anchor.
-      * ``True`` — no CA path given; fall back to the public certifi roots.
+      * an ``ssl.SSLContext`` with certificate AND hostname checking on and a
+        TLS 1.2 minimum, trusting either the operator-supplied CA PEM
+        (``ca_cert_path``) or, when none is given, the public certifi roots.
+        An explicit context replaces the deprecated ``verify=<path str>`` form
+        (httpx 0.28) and keeps ``SSL_CERT_FILE``/``SSL_CERT_DIR`` environment
+        variables from silently changing the trust anchor.
 
     A configured-but-missing ``ca_cert_path`` is a hard error rather than a
     silent fallback to certifi: silently downgrading the trust anchor the
@@ -69,7 +79,8 @@ def admin_tls_verify(verify_ssl: bool, ca_cert_path: str = "") -> Union[bool, st
         return False
     path = (ca_cert_path or "").strip()
     if not path:
-        return True
+        import certifi
+        return _harden(ssl.create_default_context(cafile=certifi.where()))
     if not os.path.isfile(path):
         raise ConfigError(
             f"ca_cert_path is set to {path!r} but no readable file exists there. "
@@ -79,14 +90,14 @@ def admin_tls_verify(verify_ssl: bool, ca_cert_path: str = "") -> Union[bool, st
     # Fail fast with a clear message if the file is not a usable CA bundle,
     # instead of surfacing an opaque httpx SSL error on the first request.
     try:
-        ssl.create_default_context(cafile=path)
+        ctx = ssl.create_default_context(cafile=path)
     except ssl.SSLError as exc:
         raise ConfigError(
             f"ca_cert_path {path!r} is not a valid PEM CA bundle: {exc}. Export the "
             "ISE root CA in Base64/PEM form (a text file beginning with "
             "'-----BEGIN CERTIFICATE-----')."
         ) from exc
-    return path
+    return _harden(ctx)
 
 # ---------------------------------------------------------------------------
 # dotenv — optional; loads a .env for env-var credential injection.
@@ -1219,11 +1230,9 @@ def _effective_limits(dep: dict, slug: str, warnings: list) -> dict:
 
 DEPLOYMENT_PROP: dict[str, Any] = {
     "type": "string",
-    "description": (
-        "Target ISE deployment: name ('RADIUS Only'), slug ('radius-only'), or number "
-        "('1' or 'Deployment 1'). Omit to use the only/default deployment. "
-        "Call ise_list_deployments to see the choices."
-    ),
+    # Repeated on ~190 tools, so kept to one line (token cost); the full
+    # explanation lives on ise_list_deployments.
+    "description": "Deployment name, slug or number; omit for the only/default one.",
 }
 
 

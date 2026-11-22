@@ -47,7 +47,8 @@ def _call(name, args):
 def test_gate_denies_when_flag_off(cfg, monkeypatch):
     monkeypatch.delenv("CISCO_ISE_MCP_ALLOW_DESTRUCTIVE", raising=False)
     out = _call("ise_ers_delete", {"resource": "endpoint", "id": "1", "confirm": True})
-    assert out["error"] == "destructive_disabled"
+    # Since v1.1.0 the default is read-only: refused before the destructive gate.
+    assert out["error"] == "read_only_mode"
 
 
 def test_gate_requires_confirm_even_when_enabled(cfg, monkeypatch):
@@ -70,18 +71,16 @@ def test_gate_pass_reaches_dispatch_and_audits(cfg, tmp_path, monkeypatch):
     monkeypatch.setenv("CISCO_ISE_MCP_ALLOW_DESTRUCTIVE", "1")
     out = _call("ise_ers_delete", {"resource": "endpoint", "id": "1", "confirm": True})
     assert out.get("error") not in ("destructive_disabled", "confirmation_required", "disabled_by_policy")
-    import json
-    statuses = [json.loads(l)["status"]
-                for l in (Path(tmp_path) / "audit.log").read_text().splitlines()]
+    from conftest import read_audit
+    statuses = [e["status"] for e in read_audit(tmp_path)]
     assert "attempt" in statuses and "error" in statuses
 
 
 def test_denied_call_is_audited(cfg, tmp_path, monkeypatch):
     monkeypatch.delenv("CISCO_ISE_MCP_ALLOW_DESTRUCTIVE", raising=False)
     _call("ise_ers_delete", {"resource": "endpoint", "id": "1", "confirm": True})
-    import json
-    statuses = [json.loads(l)["status"]
-                for l in (Path(tmp_path) / "audit.log").read_text().splitlines()]
+    from conftest import read_audit
+    statuses = [e["status"] for e in read_audit(tmp_path)]
     assert "denied" in statuses
 
 

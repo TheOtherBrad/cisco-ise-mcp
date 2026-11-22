@@ -14,6 +14,7 @@ generated from the authoritative ERS spec — not hard-coded here.
 
 from __future__ import annotations
 
+import os
 from typing import Any, Optional
 from urllib.parse import quote
 
@@ -56,6 +57,9 @@ class ISEErSClient:
             self._client = httpx.AsyncClient(
                 auth=self.auth,
                 verify=self._verify,
+                # Ignore HTTP(S)_PROXY / SSL_CERT_FILE etc. from the environment so
+                # admin credentials go only to the configured host with the configured trust.
+                trust_env=False,
                 timeout=30.0,
                 headers={
                     "Accept": "application/json",
@@ -93,7 +97,7 @@ class ISEErSClient:
         client = await self._get_client()
         resp = await client.get(url, params=params)
         resp.raise_for_status()
-        return resp.json()
+        return trim_ers(resp.json())
 
     async def ers_get_by_name(self, resource: str, name: str) -> dict:
         """GET /ers/config/<resource>/name/<name>."""
@@ -101,7 +105,7 @@ class ISEErSClient:
         client = await self._get_client()
         resp = await client.get(url)
         resp.raise_for_status()
-        return resp.json()
+        return trim_ers(resp.json())
 
     async def ers_create(self, resource: str, data: dict) -> dict:
         """POST /ers/config/<resource> — create a new resource."""
@@ -155,7 +159,7 @@ class ISEErSClient:
         params = {} if child_id else {"page": page, "size": size}
         resp = await client.get(url, params=params)
         resp.raise_for_status()
-        return resp.json()
+        return trim_ers(resp.json())
 
     # ── Generic passthrough ──
 
@@ -172,19 +176,60 @@ class ISEErSClient:
 
         ``path`` is relative to the host root, e.g. 'ers/config/endpoint'.
         """
-        clean = path.strip().lstrip("/")
-        if ".." in clean.split("/"):
-            raise ValueError(f"Path traversal ('..') is not allowed in ERS path: {path!r}")
-        if not clean.startswith("ers/"):
-            raise ValueError(
-                f"ERS passthrough paths must start with 'ers/' (got {path!r}). "
-                f"Use ise_openapi_request for /api/ endpoints."
-            )
+        from cisco_ise_mcp.url_safety import check_passthrough_path
+        try:
+            clean = check_passthrough_path(path, "ers/", "ERS")
+        except ValueError as exc:
+            if not path.strip().lstrip("/").startswith("ers/"):
+                raise ValueError(
+                    f"ERS passthrough paths must start with 'ers/' (got {path!r}). "
+                    f"Use ise_openapi_request for /api/ endpoints.") from exc
+            raise
         url = f"{self.base_url}/{clean}"
         client = await self._get_client()
         resp = await client.request(method.upper(), url, json=json, params=params or {})
         resp.raise_for_status()
-        return _json_or_status(resp, "ok")
+        result = _json_or_status(resp, "ok")
+        return trim_ers(result) if method.upper() == "GET" else result
+
+
+def _raw_ers() -> bool:
+    return os.environ.get("CISCO_ISE_MCP_RAW_ERS", "").strip().lower() in {"1", "true", "yes", "on"}
+
+
+def trim_ers(payload: Any) -> Any:
+    """Drop hypermedia the model never needs from an ERS GET response.
+
+    ERS repeats a ``link: {rel, href, type}`` object on every list row and on
+    single objects, plus ``previousPage``/``nextPage`` link objects on lists
+    (shape per the ERS OpenAPI spec). Rows are addressed by ``id`` — the href
+    adds ~100 chars per row and nothing else. Paging links are replaced by
+    ``has_previous``/``has_next`` booleans next to ``total``; the page number is
+    still the caller's ``page`` argument. Everything else is returned verbatim.
+    Kill-switch: ``CISCO_ISE_MCP_RAW_ERS=1`` returns responses unmodified.
+    """
+    if _raw_ers() or not isinstance(payload, dict):
+        return payload
+    out = dict(payload)
+    sr = out.get("SearchResult")
+    if isinstance(sr, dict):
+        sr = dict(sr)
+        prev, nxt = sr.pop("previousPage", None), sr.pop("nextPage", None)
+        sr["has_previous"] = prev is not None
+        sr["has_next"] = nxt is not None
+        res = sr.get("resources")
+        if isinstance(res, list):
+            sr["resources"] = [_drop_link(r) for r in res]
+        out["SearchResult"] = sr
+        return out
+    # Single object: {"<ResourceType>": {..., "link": {...}}}
+    return {k: _drop_link(v) for k, v in out.items()}
+
+
+def _drop_link(obj: Any) -> Any:
+    if isinstance(obj, dict) and isinstance(obj.get("link"), dict) and "href" in obj["link"]:
+        return {k: v for k, v in obj.items() if k != "link"}
+    return obj
 
 
 def _json_or_status(resp: httpx.Response, verb: str) -> Any:

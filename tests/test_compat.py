@@ -33,14 +33,29 @@ def test_to_call_result_parity_text():
     else:
         content = result
     assert isinstance(content[0], TextContent)
-    assert content[0].text == json.dumps(data, indent=2, default=str)
+    # Compact JSON: no indentation whitespace, lossless.
+    assert content[0].text == '{"a":1,"b":[2,3]}'
+    assert json.loads(content[0].text) == data
 
 
-def test_to_call_result_structured_on_v2():
+def test_text_is_compact_and_lossless_for_rich_data():
+    import datetime
+    data = {"name": "Zürich-SW ✓", "when": datetime.date(2026, 11, 6), "rows": [{"x": None}]}
+    text = compat._content(compat.text_result(data))[0].text
+    assert "\n" not in text and ": " not in text and ", " not in text
+    assert "Zürich-SW ✓" in text  # non-ASCII kept, not \\u-escaped
+    assert json.loads(text) == {"name": "Zürich-SW ✓", "when": "2026-11-06", "rows": [{"x": None}]}
+
+
+def test_to_call_result_structured_opt_in_on_v2(monkeypatch):
     data = {"a": 1}
+    # Default: no duplicate structured payload.
+    monkeypatch.delenv("CISCO_ISE_MCP_STRUCTURED", raising=False)
     result = compat.to_call_result(compat.text_result(data))
     if compat.MCP_MAJOR >= 2:
-        assert result.structured_content == data
+        assert result.structured_content is None
+        monkeypatch.setenv("CISCO_ISE_MCP_STRUCTURED", "1")
+        assert compat.to_call_result(compat.text_result(data)).structured_content == data
     else:
         # v1 stays text-only: no structured payload.
         assert isinstance(result, list)

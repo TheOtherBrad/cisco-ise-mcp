@@ -36,6 +36,7 @@ from typing import Any, Optional
 logger = logging.getLogger(__name__)
 
 from cisco_ise_mcp.limits import LimitExceeded  # noqa: E402 — after logger, no cycle
+from cisco_ise_mcp.dataconnect import sql_guard  # noqa: E402
 
 # Driver codes meaning "call_timeout expired": the statement was cancelled on the
 # server via an out-of-band break. DPI-1080 additionally means the connection is
@@ -48,11 +49,6 @@ def _is_call_timeout(exc: BaseException) -> bool:
 
 
 _IDENT = _re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-# FROM/JOIN targets in a raw SELECT, used to confine ise_dc_query to known views.
-_FROM_JOIN = _re.compile(r"\b(?:FROM|JOIN)\s+([A-Za-z_][A-Za-z0-9_.\"]*)", _re.IGNORECASE)
-# SQL comment markers that must not appear in a raw query.
-_SQL_COMMENT = _re.compile(r"--|/\*|\*/")
-
 # ---------------------------------------------------------------------------
 # Raw-query cost-guard patterns.
 #
@@ -65,8 +61,6 @@ _ROW_BOUND = _re.compile(r"\b(?:FETCH\s+(?:FIRST|NEXT)|ROWNUM|ROW_NUMBER\s*\()",
 # Aggregation — gets the larger default row limit (aggregate rows are cheap to return).
 _AGGREGATE = _re.compile(
     r"\b(?:GROUP\s+BY|COUNT\s*\(|SUM\s*\(|AVG\s*\(|MIN\s*\(|MAX\s*\()", _re.IGNORECASE)
-# CTE names in `WITH a AS ( ... ), b AS ( ... ) SELECT ...` — treated as local aliases.
-_CTE_NAME = _re.compile(r"(?:\bWITH\s+|,\s*)([A-Za-z_][A-Za-z0-9_]*)\s+AS\s*\(", _re.IGNORECASE)
 _JOIN_KW = _re.compile(r"\bJOIN\b", _re.IGNORECASE)
 _NATURAL_JOIN = _re.compile(r"\bNATURAL\s+(?:INNER\s+|OUTER\s+|LEFT\s+|RIGHT\s+|FULL\s+)*JOIN\b",
                             _re.IGNORECASE)
@@ -92,12 +86,6 @@ class RawQueryRejected(ValueError):
         if example:
             msg += f"\n\nCorrected example:\n  {example}"
         super().__init__(msg)
-
-
-def _cte_names(sql: str) -> set:
-    """Local CTE aliases, upper-cased. They are not catalog views and must not be
-    rejected by the allow-list — but their bodies are still scanned for facts."""
-    return {m.group(1).upper() for m in _CTE_NAME.finditer(sql)}
 
 
 def _check_joins(sql: str, target_count: int) -> None:
@@ -204,23 +192,12 @@ def validate_raw_select(sql: str, allowed_views: set, *,
     """
     if not _LEADING_STMT.match(sql):
         raise ValueError("Only SELECT statements (optionally preceded by WITH ... AS) are permitted.")
-    if _SQL_COMMENT.search(sql):
-        raise ValueError("SQL comments ('--', '/* */') are not allowed in ise_dc_query.")
-    # A trailing ';' is tolerated; an interior ';' means stacked statements.
-    if ";" in sql.rstrip().rstrip(";"):
-        raise ValueError("Multiple/stacked SQL statements are not allowed.")
-
-    local = _cte_names(sql)
-    targets = {t.strip('"').split(".")[-1].upper() for t in _FROM_JOIN.findall(sql)}
-    if not targets:
-        raise ValueError("Could not identify a FROM target; query a known Data Connect view.")
-    real_targets = {t for t in targets if t not in local and t != "DUAL"}
-    disallowed = sorted(t for t in real_targets if t not in allowed_views)
-    if disallowed:
-        raise ValueError(
-            "ise_dc_query is restricted to Data Connect catalog views. "
-            f"Not allowed: {', '.join(disallowed)}. Use ise_dc_list_views to see valid views."
-        )
+    # Security: parser-based lexing + allow-list over EVERY table in the tree,
+    # CTE references resolved per scope; fails closed on anything unparseable.
+    real_targets = sql_guard.check(sql, allowed_views)
+    # Cost heuristics below run on a token-accurate copy with literals blanked, so
+    # a literal can never satisfy a time predicate or count as a join condition.
+    scan = sql_guard.blank_literals(sql)
 
     if policy is None:
         return sql
@@ -230,8 +207,8 @@ def validate_raw_select(sql: str, allowed_views: set, *,
     # counting it as one would reject every valid `WITH ... SELECT * FROM cte`.
     # Views used *inside* CTE bodies are still in real_targets, so a genuine
     # comma join through a CTE is still caught.
-    _check_joins(sql, len(real_targets))
-    _check_fact_time_bounds(sql, facts, view_time_cols or {},
+    _check_joins(scan, len(real_targets))
+    _check_fact_time_bounds(scan, facts, view_time_cols or {},
                             int(getattr(policy, "max_fact_views", 3)))
     return _inject_row_bound(sql, policy)
 
@@ -425,6 +402,8 @@ class ISEDataConnectClient:
     def _thin_ssl_context(self) -> ssl.SSLContext:
         ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         if self.verify_ssl:
+            # TLS 1.2 floor for every verified Data Connect connection.
+            ctx.minimum_version = ssl.TLSVersion.TLSv1_2
             if self.os_trust:
                 # CA-signed cert whose root is trusted by the OS/default CA store.
                 # Validate the chain AND bind to the hostname: with a public/OS CA

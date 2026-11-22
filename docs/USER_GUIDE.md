@@ -6,8 +6,13 @@ read **[QUICKSTART.md](QUICKSTART.md)** first, then come back here for detail.
 
 > **Multiple deployments:** one server can manage **multiple ISE deployments**.
 > You choose the target per request by **name** or **number**, each deployment
-> stores its credentials and Data Connect certificate **separately and securely**,
-> and you can add deployments straight from the AI agent — no file editing.
+> stores its credentials and Data Connect certificate **separately and securely**.
+>
+> **Read-only by default:** out of the box the agent can only **read** from ISE, and
+> tools that could make changes are not loaded. Every call is written to a daily audit
+> log. Writes are enabled with `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1`; see
+> [§10](#10-configuration-reference-variables--where-to-set-them) and
+> [§16](#16-security-notes).
 
 ## Table of Contents
 
@@ -21,7 +26,7 @@ read **[QUICKSTART.md](QUICKSTART.md)** first, then come back here for detail.
 7. [Credentials & secure storage](#7-credentials--secure-storage)
 8. [Data Connect setup (per deployment)](#8-data-connect-setup-per-deployment)
 9. [Running the server](#9-running-the-server)
-10. [Environment variables](#10-environment-variables)
+10. [Configuration reference (variables & where to set them)](#10-configuration-reference-variables--where-to-set-them)
 11. [Connecting an AI agent](#11-connecting-an-ai-agent)
 12. [Available tools](#12-available-tools)
 13. [Usage examples](#13-usage-examples)
@@ -66,7 +71,7 @@ query against the monitoring database is the specific risk this release exists t
 and a warn-only period would leave the Monitoring node exposed for another release.
 
 Run `ise_limits_status` (or `cisco-ise-mcp test <slug>`) after upgrading to see the
-effective limits. Full details are in [docs/UPDATES.md](UPDATES.md).
+effective limits. Full details are in [docs/CHANGELOG.md](CHANGELOG.md).
 
 ## 2. Choosing the right surface (routing)
 
@@ -285,9 +290,16 @@ hostname, so a separate host works with no extra TLS configuration.
 
 ## 6. Adding & managing deployments
 
-### Option A — from the AI agent (no file editing)
+### Option A — from the AI agent (requires writes enabled)
 
-Just ask. For example:
+> In the default **read-only** mode the agent cannot add, update or remove deployments.
+> Those tools are not loaded, and `deployments.json` cannot be retargeted by a
+> prompt-injected agent. Use **Option B (CLI)**, or enable writes with
+> `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1` (see [§10.5](#105-where-to-set-variables)).
+> `ise_list_deployments`, `ise_set_default_deployment` and `ise_test_deployment` always
+> work.
+
+With writes enabled, just ask. For example:
 
 > "Add an ISE deployment named **TACACS Only**, host **10.2.1.1**, ERS username **ers-admin**."
 
@@ -438,6 +450,9 @@ Notes:
   are configured separately: Data Connect trust does not carry over to the admin surfaces.
 - Pass `--ca-cert ''` on `update` to clear it and fall back to the certifi bundle (only
   works if the admin cert chains to a public CA).
+- Connections require **TLS 1.2 or newer**, and the environment variables `HTTPS_PROXY`,
+  `HTTP_PROXY`, `SSL_CERT_FILE` and `SSL_CERT_DIR` are **ignored** for admin connections
+  (since v1.1.0), so the trust anchor is only ever `--ca-cert` or certifi.
 - `--no-verify-ssl` disables validation entirely — labs only; it exposes admin credentials
   to man-in-the-middle interception.
 
@@ -448,7 +463,7 @@ existing deployment (for example, turning on Data Connect and pointing it at a c
 after the fact). **Only the fields you provide change** — everything else, including stored
 passwords, is left exactly as it was.
 
-From the AI agent (no file editing):
+From the AI agent (writes enabled; see Option A):
 
 > "On the **TACACS Only** deployment, fix the host to **10.2.1.5** and turn on Data Connect
 > using cert **/opt/cisco-ise-mcp/certs/tacacs.pem**."
@@ -681,7 +696,7 @@ table expressions (`WITH ... AS ( ... ) SELECT ...`) are supported. Note the asy
 the 90-day clamp applies to the structured `days_back` parameter; a hand-written time
 predicate in raw SQL is *not* clamped, so the 60-second timeout is the backstop there.
 
-**Tuning.** Environment variables (`CISCO_ISE_MCP_*`, see [section 10](#10-environment-variables))
+**Tuning.** Environment variables (`CISCO_ISE_MCP_*`, see [section 10](#10-configuration-reference-variables--where-to-set-them))
 are hard ceilings; a per-deployment override may only tighten them:
 
 ```bash
@@ -703,58 +718,185 @@ It waits silently for an MCP client to connect (no output is normal). Press `Ctr
 stop. The other CLI subcommands (`list`, `add`, `set-credential`, `test`, …) are for
 managing deployments and are covered above.
 
-## 10. Environment variables
+## 10. Configuration reference (variables & where to set them)
 
-You normally configure the server with the CLI or the AI agent — **no environment
-variables are required**. The variables below are for advanced situations: relocating
-the registry, injecting passwords on a headless host, gating destructive tools, and
-tuning resource limits.
+No variables are required. Out of the box the server is **read-only**, logs every call,
+and uses the OS keyring for passwords. Everything below is optional. The tables give
+each user-settable variable's **name, function, accepted values and default**.
+[§10.5](#105-where-to-set-variables) explains exactly **which file to edit**.
 
-The `CISCO_ISE_MCP_*` limit variables are **hard ceilings**: a per-deployment `limits`
-block in `deployments.json` may only *tighten* them, never raise them.
+### 10.1 Access control & safety
 
-**Configuration Source** is *where you set the variable*: the agent's MCP-config `env`
-block (see [section 11](#11-connecting-an-ai-agent)), a `.env` file in the project root
-(read at startup via python-dotenv — see `.env.example`), or the server process's shell /
-container environment. The per-deployment password variables are typically set via `.env`
-or container secrets.
+| Variable | Function | Values | Default |
+| --- | --- | --- | --- |
+| `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE` | **Master write switch.** Off: the server is **read-only**. No ISE create/update/delete or CoA, and no deployment add/update/remove from the agent. Write-capable tools are **not loaded**, and the raw passthroughs accept `GET` only. On: all tools load, and destructive calls (delete, restore/rollback, patch/hot-patch install, certificate import, CoA, session delete) still need `confirm=true` on each call. | `1`, `true`, `yes`, `on` (any case) = on; anything else = off | off (**read-only**) |
+| `CISCO_ISE_MCP_BLOCKED_TOOLS` | Tools that are **never loaded and always refused**, read or write, whatever the master switch says. Use it to allow writes but keep specific tools disabled (force those through the ISE GUI). | Comma-separated tool names, e.g. `ise_ers_delete,ise_openapi_backup_restore,ise_openapi_patch_install` | empty |
+| `CISCO_ISE_MCP_VALIDATE_ARGS` | Check every call's arguments against the tool's input schema before it runs. Refusal: `invalid_arguments`. Keep it on. | `0`, `false`, `no`, `off` = off; anything else = on | on |
 
-| Variable | Description | Configuration Source | Values | Default |
-| --- | --- | --- | --- | --- |
-| `CISCO_ISE_MCP_HOME` | Override the folder holding the registry (`deployments.json`) and any certificates. | Agent MCP-config `env` block · `.env` · shell/container env | Any writable directory path. | OS-specific: Windows `%APPDATA%\cisco-ise-mcp`; macOS `~/Library/Application Support/cisco-ise-mcp`; Linux `$XDG_CONFIG_HOME/cisco-ise-mcp` (else `~/.config/cisco-ise-mcp`). |
-| `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE` | Enable destructive ISE-side tools (delete, restore, rollback, CoA disconnect). Each call **also** requires `confirm=true`. | Agent MCP-config `env` block · `.env` · shell/container env | `1`, `true`, `yes`, `on` = enabled; any other value = disabled. | disabled (unset / `0`) |
-| `CISCO_ISE_MCP_BLOCKED_TOOLS` | Tools that are **always denied**, overriding the allow flag — use it to force the most disruptive actions through the ISE GUI. | Agent MCP-config `env` block · `.env` · shell/container env | Comma-separated tool names, e.g. `ise_ers_delete,ise_openapi_backup_restore`. | empty (nothing extra blocked) |
-| `CISCO_ISE_MCP_DC_MAX_CONCURRENT` | Max simultaneous Data Connect queries per deployment (also the Oracle pool size). | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `5` |
-| `CISCO_ISE_MCP_DC_ACQUIRE_WAIT_S` | Seconds a call waits for a free Data Connect slot before being refused. | Agent MCP-config `env` block · `.env` · shell/container env | Number of seconds, capped at 15. | `5` |
-| `CISCO_ISE_MCP_DC_QUERY_TIMEOUT_S` | Seconds a single query may run before it is cancelled **on the Monitoring node**. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of seconds. | `60` |
-| `CISCO_ISE_MCP_DC_QPM` | Sustained Data Connect queries per minute per deployment. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number. | `30` |
-| `CISCO_ISE_MCP_DC_DEFAULT_DAYS_BACK` | Window applied when a view query omits `days_back`. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of days. | `7` |
-| `CISCO_ISE_MCP_DC_MAX_DAYS_BACK` | Largest `days_back` allowed; larger requests are reduced to it, not rejected. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of days. | `90` |
-| `CISCO_ISE_MCP_DC_DEFAULT_ROW_LIMIT` | Row bound injected into `ise_dc_query` when it has none. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of rows. | `500` |
-| `CISCO_ISE_MCP_DC_DEFAULT_AGG_ROW_LIMIT` | Row bound injected when the raw query aggregates (`GROUP BY`/`COUNT`/...). | Agent MCP-config `env` block · `.env` · shell/container env | Whole number of rows. | `5000` |
-| `CISCO_ISE_MCP_DC_MAX_FACT_VIEWS` | Large event views joinable in one `ise_dc_query`; lookup views are exempt. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number. | `3` |
-| `CISCO_ISE_MCP_ERS_MAX_CONCURRENT` | Max simultaneous ERS calls, out of Cisco's deployment-wide ~100. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `10` |
-| `CISCO_ISE_MCP_OPENAPI_MAX_CONCURRENT` | Max simultaneous Open API calls, out of Cisco's deployment-wide ~150. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `15` |
-| `CISCO_ISE_MCP_MNT_MAX_CONCURRENT` | Max simultaneous Monitoring (MnT) calls. | Agent MCP-config `env` block · `.env` · shell/container env | Whole number ≥ 1. | `5` |
-| `CISCO_ISE__<SLUG>__ISE_PASSWORD` | Inject a deployment's ERS / Open API password instead of using the OS keyring (headless / container). | `.env` · container secret env | The password string. | unset → try `*_FILE`, then OS keyring |
-| `CISCO_ISE__<SLUG>__ISE_PASSWORD_FILE` | File-path variant of the ERS password (Docker / Kubernetes secrets). | `.env` · container secret env | Path to a file whose contents are the password. | unset |
-| `CISCO_ISE__<SLUG>__DATACONNECT_PASSWORD` | Inject a deployment's Data Connect password (only if Data Connect is enabled). | `.env` · container secret env | The password string. | unset → try `*_FILE`, then OS keyring |
-| `CISCO_ISE__<SLUG>__DATACONNECT_PASSWORD_FILE` | File-path variant of the Data Connect password. | `.env` · container secret env | Path to a file whose contents are the password. | unset |
+### 10.2 Audit logging & server output
 
-**Building the per-deployment variable name.** Replace `<SLUG>` with the deployment slug
-upper-cased and with hyphens turned into underscores (see
-[section 7](#7-credentials--secure-storage)):
+| Variable | Function | Values | Default |
+| --- | --- | --- | --- |
+| `CISCO_ISE_MCP_LOG_RETENTION_DAYS` | How many days of daily audit logs (`<config home>/logs/YYYY-MM-DD.log`) are kept. Older files are deleted at startup and once a day. It is an environment setting, not a `deployments.json` field, so the AI agent can never shorten its own audit trail. See [§16](#16-security-notes) for the log format. | Whole number of days. Below 90 is raised to **90**; above 3650 is lowered to **3650**; non-numbers fall back to the default. | `365` |
+| `CISCO_ISE_MCP_LOG_LEVEL` | Detail of the server's diagnostic log. This is separate from the audit log, and it is written to **stderr** because stdout carries the MCP protocol. | `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL` (any case; an invalid value means `WARNING`) | `WARNING` |
+| `CISCO_ISE_MCP_STRUCTURED` | Also send MCP `structuredContent` (MCP 2.x clients only). It duplicates the text result, so it is off to save tokens. | `1`, `true`, `yes`, `on` (any case) = on; anything else = off | off |
+| `CISCO_ISE_MCP_RAW_ERS` | Return ERS responses verbatim, keeping per-row `link` objects and `nextPage`/`previousPage`. These are normally replaced by `has_next`/`has_previous` to save tokens. | `1`, `true`, `yes`, `on` (any case) = on; anything else = off | off |
 
+### 10.3 Resource limits (environment ceilings)
+
+These are **hard ceilings**. A per-deployment `limits` block in `deployments.json`
+(see [§10.6](#106-per-deployment-settings-deploymentsjson)) may only *tighten* them,
+never raise them.
+
+| Variable | Function | Values | Default |
+| --- | --- | --- | --- |
+| `CISCO_ISE_MCP_DC_MAX_CONCURRENT` | Maximum simultaneous Data Connect queries per deployment. This is also the Oracle session-pool size. | Number ≥ 0. Non-numeric or negative values are ignored (default used). Minimum effective value **1**. | `5` |
+| `CISCO_ISE_MCP_DC_ACQUIRE_WAIT_S` | Seconds a call waits for a free Data Connect slot before it is refused. | Number ≥ 0. Non-numeric or negative values are ignored (default used). Hard-capped at **15**. | `5` |
+| `CISCO_ISE_MCP_DC_QUERY_TIMEOUT_S` | Seconds one query may run before it is **cancelled on the Monitoring node**. | Number ≥ 0. Non-numeric or negative values are ignored (default used). `0` = no timeout (not recommended). | `60` |
+| `CISCO_ISE_MCP_DC_QPM` | Sustained Data Connect queries per minute, per deployment. | Number ≥ 0. Non-numeric or negative values are ignored (default used). `0` = no per-minute limit. | `30` |
+| `CISCO_ISE_MCP_DC_DEFAULT_DAYS_BACK` | Time window applied when a view query omits `days_back`. | Number ≥ 0. Non-numeric or negative values are ignored (default used). | `7` |
+| `CISCO_ISE_MCP_DC_MAX_DAYS_BACK` | Largest `days_back` allowed. Larger requests are reduced to it, not rejected. | Number ≥ 0. Non-numeric or negative values are ignored (default used). | `90` |
+| `CISCO_ISE_MCP_DC_DEFAULT_ROW_LIMIT` | Row bound added to `ise_dc_query` when the query has none. | Number ≥ 0. Non-numeric or negative values are ignored (default used). `0` = add none. | `500` |
+| `CISCO_ISE_MCP_DC_DEFAULT_AGG_ROW_LIMIT` | The same bound, for queries that aggregate (`GROUP BY`, `COUNT`, …). | Number ≥ 0. Non-numeric or negative values are ignored (default used). `0` = add none. | `5000` |
+| `CISCO_ISE_MCP_DC_MAX_FACT_VIEWS` | Large event views that may be joined in one `ise_dc_query`. Small lookup views are exempt. | Number ≥ 0. Non-numeric or negative values are ignored (default used). | `3` |
+| `CISCO_ISE_MCP_ERS_MAX_CONCURRENT` | Maximum simultaneous ERS calls, out of Cisco's deployment-wide ~100. | Number ≥ 0. Non-numeric or negative values are ignored (default used). Minimum effective value **1**. | `10` |
+| `CISCO_ISE_MCP_OPENAPI_MAX_CONCURRENT` | Maximum simultaneous Open API calls, out of Cisco's deployment-wide ~150. | Number ≥ 0. Non-numeric or negative values are ignored (default used). Minimum effective value **1**. | `15` |
+| `CISCO_ISE_MCP_MNT_MAX_CONCURRENT` | Maximum simultaneous Monitoring (MnT) calls. | Number ≥ 0. Non-numeric or negative values are ignored (default used). Minimum effective value **1**. | `5` |
+
+### 10.4 Locations & per-deployment passwords
+
+| Variable | Function | Values | Default |
+| --- | --- | --- | --- |
+| `CISCO_ISE_MCP_HOME` | Folder holding `deployments.json`, `.env`, `logs/` and your certificates (the **config home**). Must be set in the MCP client `env` block or the shell. It **cannot** go in `.env`, because the server uses it to find `.env`. | Any absolute directory path | Windows `%APPDATA%\cisco-ise-mcp` · macOS `~/Library/Application Support/cisco-ise-mcp` · Linux `$XDG_CONFIG_HOME/cisco-ise-mcp` (else `~/.config/cisco-ise-mcp`) |
+| `CISCO_ISE__<SLUG>__ISE_PASSWORD` | A deployment's ERS / Open API / MnT password, for hosts without an OS keyring. | The password | unset (then `*_FILE`, then keyring) |
+| `CISCO_ISE__<SLUG>__ISE_PASSWORD_FILE` | Path to a file containing that password (Docker / Kubernetes secrets). | File path | unset |
+| `CISCO_ISE__<SLUG>__DATACONNECT_PASSWORD` | A deployment's Data Connect password. | The password | unset (then `*_FILE`, then keyring) |
+| `CISCO_ISE__<SLUG>__DATACONNECT_PASSWORD_FILE` | Path to a file containing the Data Connect password. | File path | unset |
+
+**`<SLUG>`** is the deployment slug upper-cased, with hyphens turned into underscores:
+`radius-only` → `CISCO_ISE__RADIUS_ONLY__ISE_PASSWORD`. Run `cisco-ise-mcp list` to see
+slugs. Resolution order per password, first match wins: **environment variable →
+`*_FILE` → OS keyring** (see [§7](#7-credentials--secure-storage)).
+
+> `CISCO_ISE_MCP_AUTH` and `<config home>/auth.json` belong to a planned network
+> (HTTP) transport and have **no effect** on the current stdio server (see
+> `docs/AUTH_DESIGN.md`).
+
+### 10.5 Where to set variables
+
+Settings are read **once, when the server starts**. After changing any of them, fully
+restart your MCP client (or the server process) for them to take effect.
+
+**Precedence** (verified; the first source that defines a variable wins):
+
+1. **The MCP client's `env` block** (or the shell / container environment that launches the
+   server).
+2. **`<config home>/.env`**. It only fills variables that are not already set, so it
+   never overrides 1.
+3. Built-in defaults.
+
+> A `.env` in the **project folder** or the **current directory** is **ignored**. The
+> server reads `.env` only from the config home, so starting it in an untrusted folder
+> cannot inject settings or credentials.
+
+#### Option 1 — the MCP client `env` block (recommended)
+
+Add an `env` object next to `command`/`args` in the client config (paths for Claude
+Desktop are in [§11](#11-connecting-an-ai-agent)). Values must be strings:
+
+```json
+{
+  "mcpServers": {
+    "cisco-ise": {
+      "command": "uv",
+      "args": ["--directory", "/ABSOLUTE/PATH/TO/cisco-ise-mcp", "run", "cisco-ise-mcp"],
+      "env": {
+        "CISCO_ISE_MCP_ALLOW_DESTRUCTIVE": "1",
+        "CISCO_ISE_MCP_BLOCKED_TOOLS": "ise_openapi_backup_restore,ise_openapi_patch_install",
+        "CISCO_ISE_MCP_LOG_RETENTION_DAYS": "730"
+      }
+    }
+  }
+}
 ```
-slug "radius-only"  ->  CISCO_ISE__RADIUS_ONLY__ISE_PASSWORD
-                        CISCO_ISE__RADIUS_ONLY__DATACONNECT_PASSWORD
+
+For Claude Code: `claude mcp add cisco-ise -e CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1 -- uv
+--directory /ABSOLUTE/PATH/TO/cisco-ise-mcp run cisco-ise-mcp`, or edit the `env` block
+of the server in `.mcp.json` / `~/.claude.json`.
+
+#### Option 2 — the `.env` file in the config home
+
+Create (or edit) the file named exactly **`.env`** in the config home:
+
+| OS | File to edit |
+| --- | --- |
+| macOS | `~/Library/Application Support/cisco-ise-mcp/.env` |
+| Linux | `$XDG_CONFIG_HOME/cisco-ise-mcp/.env` (usually `~/.config/cisco-ise-mcp/.env`) |
+| Windows | `%APPDATA%\cisco-ise-mcp\.env` |
+| Relocated | `$CISCO_ISE_MCP_HOME/.env` |
+
+Use one `NAME=value` per line, with no quotes needed and `#` for comments. Copy
+`.env.example` from the project as a template, then restrict it to its owner, because it
+may contain passwords:
+
+```bash
+cp .env.example "$HOME/Library/Application Support/cisco-ise-mcp/.env"   # macOS example
+chmod 600 "$HOME/Library/Application Support/cisco-ise-mcp/.env"
 ```
 
-**Resolution order per password** (first match wins): the environment variable → the
-`*_FILE` secret file → the OS keyring. See
-[section 7](#7-credentials--secure-storage) for the keyring path and `.env.example` for a
-copy-paste template. Enabling and blocking destructive tools is covered in more detail in
-[section 16](#16-security-notes).
+`CISCO_ISE_MCP_HOME` **cannot** be set here, because it decides where this file is. Set it
+in the client `env` block or the shell instead.
+
+#### Option 3 — the shell or container environment
+
+`export NAME=value` (macOS/Linux) or `setx NAME value` (Windows) before starting the
+client. For Docker / Kubernetes, use `environment:` / `env:`, and `*_PASSWORD_FILE` with
+mounted secrets.
+
+#### Checking what is in force
+
+- `cisco-ise-mcp test <slug>` or the `ise_limits_status` tool shows the effective limits.
+- `cisco-ise-mcp list` prints the registry path, which is inside the config home.
+- In read-only mode, `tools/list` has no create/update/delete tools. The first line of
+  `<config home>/logs/<today>.log` appears on the first call.
+
+### 10.6 Per-deployment settings (`deployments.json`)
+
+Non-secret, per-deployment settings live in **`<config home>/deployments.json`** (paths
+as in the `.env` table above, file `deployments.json`). Prefer `cisco-ise-mcp add` /
+`update` / `remove`, which validate input and keep the file at `0600`. If you edit it by
+hand, keep the JSON valid and run `cisco-ise-mcp test <slug>` afterwards.
+`deployments.example.json` in the project shows the full structure. **Passwords never go
+in this file.**
+
+| Field (JSON path under `deployments.<slug>`) | Function | Values | Default |
+| --- | --- | --- | --- |
+| `name` | Display label; the slug is derived from it. | Text | (required) |
+| `host` | ISE admin node (PAN) for ERS / Open API / MnT. | IP or FQDN; use the FQDN when `verify_ssl` is true | (required) |
+| `ers_username` | Admin account for ERS / Open API / MnT. | Text | (required for REST) |
+| `ers_port` / `openapi_port` | REST ports. | `443` (gateway), `9060` (ERS) / `9070` (Open API) | `443` |
+| `verify_ssl` | Validate the admin TLS certificate. | `true` / `false` (lab only) | `true` |
+| `ca_cert_path` | PEM CA bundle for a private ISE CA (admin TLS). | File path, or `""` for certifi | `""` |
+| `monitoring_enabled` | Enable the MnT API (`ise_mnt_*`). | `true` / `false` | `false` for new deployments |
+| `dataconnect.enabled` | Enable Data Connect (`ise_dc_*`). | `true` / `false` | `true` |
+| `dataconnect.host` | MnT node, if it is not `host`. | IP / FQDN, or `""` | `""` (= `host`) |
+| `dataconnect.port` / `.sid` / `.user` | Oracle listener details. | Number / text | `2484` / `cpm10` / `dataconnect` |
+| `dataconnect.mode` | Driver mode. | `thin` / `thick` | `thin` |
+| `dataconnect.cert_path` | Pinned Data Connect certificate or root CA (PEM). | File path | `""` |
+| `dataconnect.wallet_path` | Wallet directory (thick, or thin via `ewallet.pem`). | Directory path | `""` |
+| `dataconnect.verify_ssl` | Validate the Data Connect certificate. | `true` / `false` | `true` |
+| `dataconnect.os_trust` | Trust the OS CA store for a CA-signed certificate (hostname checked). | `true` / `false` | `false` |
+| `dataconnect.oracle_client_lib` | Instant Client directory (thick mode). | Directory path | `""` |
+| `limits.dataconnect.{max_concurrent, query_timeout_s, max_per_minute, default_days_back, max_days_back, default_row_limit, max_fact_views}` | Per-deployment Data Connect limits. They may only **tighten** the §10.3 ceilings. | Whole numbers ≥ 1 | inherit §10.3 |
+| `limits.ers.max_concurrent`, `limits.openapi.max_concurrent`, `limits.monitoring.max_concurrent` | Per-deployment REST concurrency (tighten only). | Whole numbers ≥ 1 | inherit §10.3 |
+
+Top-level keys: `"default"` is the slug used when a call names no deployment (set it with
+`cisco-ise-mcp set-default <slug>`), and `"version"` is the registry format (do not edit).
+
+> Safety switches, audit retention and limit **ceilings** are deliberately **not** in
+> `deployments.json`. When writes are enabled, the AI agent can edit this file through
+> the registry tools, and it must not be able to loosen its own restrictions or shorten
+> its audit trail.
 
 ## 11. Connecting an AI agent
 
@@ -788,7 +930,7 @@ Edit the config file:
   "env": { "CISCO_ISE_MCP_HOME": "/opt/cisco-ise-mcp" }
   ```
   The `env` block is also where you set any other server variable (see
-  [section 10](#10-environment-variables)).
+  [section 10](#10-configuration-reference-variables--where-to-set-them)).
 
 Restart Claude Desktop after editing. The Cisco ISE tools then appear in the client.
 
@@ -957,22 +1099,53 @@ That's correct — the server waits silently for an MCP client over stdio.
 
 **Resource limits cannot be raised by the agent.** The `CISCO_ISE_MCP_*` environment
 variables are hard ceilings, and a per-deployment `limits` block may only tighten them.
-This matters because an AI agent *can* edit non-secret registry fields through
-`ise_update_deployment` — the ordering stops it granting itself a larger budget against
+When writes are enabled, an AI agent *can* edit non-secret registry fields through
+`ise_update_deployment`; this ordering stops it granting itself a larger budget against
 your ISE deployment. Only an operator with access to the server's environment can raise a
-ceiling.
+ceiling. In the default read-only mode the agent cannot edit the registry at all.
 
-**Data Connect query logging.** Data Connect reads are recorded in `audit.log` alongside
-the mutation trail (tagged `kind="dc_query"`) so monitoring-database load is visible. The
-log records the view, applied time window, duration, row count and outcome — deliberately
-**not** filter values or raw SQL, since a filter value is typically a username, MAC or IP.
+### Audit log
+
+Every tool call made through the server is recorded, including reads, refusals and errors.
+
+- **Where:** `<config home>/logs/YYYY-MM-DD.log`, one file per **local** calendar day
+  (config home paths are in [§10.5](#105-where-to-set-variables)). The folder is `0700`
+  and files are `0600` (owner only). Permissions are re-applied on every write, and a
+  symlinked log file is never written through.
+- **Format:** each line starts with the local date and time, including the UTC offset,
+  followed by one JSON object:
+
+  ```
+  2026-11-06T12:58:10.914-06:00 {"tool":"ise_ers_create","access":"write","status":"denied","arguments":{"resource":"endpoint","data":{"password":"*****"}},"duration_ms":0,"error":"read_only_mode"}
+  ```
+
+  - `tool` is the function called.
+  - `access` is `read`, `write`, `destructive`, `registry` or `cli`.
+  - `status` is `ok`, `error` or `denied`. Changes also get an `attempt` line before they
+    run.
+  - `deployment`, `duration_ms` and `error` are recorded when relevant.
+  - `arguments` are recorded, **including request bodies**, so you can see exactly what
+    was created or changed.
+  - Data Connect queries add a `dc_query` line with the view, time window, row count and
+    duration.
+- **Secrets are never written.** The value of any key that looks secret, at any depth
+  (password, secret, token, API/private/pre-shared key, shared secret, credential,
+  authorization, …), is replaced by `*****`. So are `password=…`/`token: …` text and
+  `Bearer`/`Basic` credentials inside strings. Strings over 2,000 characters are
+  truncated.
+- **Personal data:** arguments such as usernames, MAC/IP filters and SQL **are** logged,
+  which is needed to audit what the agent looked at. Treat the logs as sensitive.
+- **Retention:** set `CISCO_ISE_MCP_LOG_RETENTION_DAYS`. The default is 365, and values
+  are kept within 90–3650. Only files named exactly `YYYY-MM-DD.log` in `logs/` are ever
+  deleted. The legacy `audit.log` from versions ≤ 1.1.0 is left in place for you to
+  archive or delete.
 
 
 
 - **Passwords are never stored in files** by default — they go to the OS keyring, and are
   never passed through the AI agent. The agent only ever writes non-secret settings.
-- **`.gitignore`** excludes `.env`, `deployments.json`, and `*.pem` so secrets and host
-  details aren't committed. Keep it that way.
+- **`.gitignore`** excludes `.env`, `deployments.json`, logs, `*.pem` and other key
+  material, so secrets, host details and audit logs aren't committed. Keep it that way.
 - On macOS/Linux the registry is written with `0600` permissions (owner-only).
 - Use a **least-privilege** ISE admin account for ERS/Open API where possible; Data Connect
   access is **read-only** by design.
@@ -985,19 +1158,29 @@ log records the view, applied time window, duration, row count and outcome — d
 - Treat `CISCO_ISE_MCP_HOME` and any certificate files as sensitive — store them where only
   the intended user can read them.
 
-### Destructive tools are disabled by default
+### Read-only by default; destructive tools need confirmation
 
-Destructive ISE-side operations are **denied unless an operator explicitly enables them**,
-and every such call also requires `confirm=true`. Each attempt is written to the audit log
-before and after execution.
+The server starts **read-only**. With `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE` unset or `0`:
 
-- **Enable:** set `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1` in the server environment. It is
-  `0` (off) by default. With it off, these tools return a refusal and make no changes.
+- **No create, update or delete** reaches ISE: no ERS/Open API writes, no CoA, no session
+  delete, no backup/restore/patch. The agent also cannot add, update or remove
+  deployments.
+- Those tools are **not loaded**: 163 of 203 tools are listed. The raw passthroughs
+  (`ise_ers_request`, `ise_openapi_request`, `ise_mnt_request`) accept `GET` only, and a
+  GET to an MnT CoA path is still refused.
+- A client with a stale tool list that calls a hidden tool gets `read_only_mode`
+  (`isError: true`), and the attempt is audited as `denied`.
+
+Enabling writes:
+
+- **Enable:** set `CISCO_ISE_MCP_ALLOW_DESTRUCTIVE=1` in the server environment (see
+  [§10.5](#105-where-to-set-variables)) and restart the client. All tools then load.
 - **`confirm=true` is always required**, even when destructive tools are enabled — a call
   without it is refused with a dry-run description.
-- **Block specific verbs (force GUI):** `CISCO_ISE_MCP_BLOCKED_TOOLS` is a comma-separated
-  list of tool names that are **always denied**, overriding the allow flag — use it to force
-  the most disruptive actions through the ISE GUI only. Example:
+- **Block specific tools (force GUI):** `CISCO_ISE_MCP_BLOCKED_TOOLS` is a comma-separated
+  list of tool names that are **never loaded and always denied**, overriding the allow flag.
+  Use it to allow writes but force the most disruptive actions through the ISE GUI.
+  Example:
   `CISCO_ISE_MCP_BLOCKED_TOOLS=ise_openapi_backup_restore,ise_openapi_patch_rollback,ise_ers_delete`
 
 Tools classified destructive (per surface):
@@ -1014,4 +1197,10 @@ Tools classified destructive (per surface):
 | | `ise_openapi_backup_restore` | |
 | | `ise_openapi_request` (DELETE) | |
 
-(`ise_remove_deployment` edits only the local registry and keeps its own separate `confirm`.)
+Since v1.1.0 also: `ise_openapi_patch_install`, `ise_openapi_hotpatch_install`,
+`ise_openapi_cert_system_import`, `ise_openapi_cert_trusted_import`, `ise_mnt_coa_reauth`,
+any `ise_mnt_request` to a `/CoA/` or `/Session/Delete/` path, and `ise_openapi_request`
+non-GET calls to install/rollback/restore/import/reset paths.
+
+(`ise_remove_deployment` edits only the local registry and keeps its own separate
+`confirm`. It is hidden in read-only mode.)
